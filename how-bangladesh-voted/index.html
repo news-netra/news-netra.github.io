@@ -1,0 +1,1929 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>How Bangladesh Voted — The 2026 Election in 42,382 Polling Centres</title>
+<meta name="description" content="The fullest account yet of Bangladesh’s 2026 election: 42,382 polling-centre returns, the voter roll and thousands of local geographies reveal how the country voted." />
+<meta name="color-scheme" content="light" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&amp;family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;0,6..72,700;1,6..72,600;1,6..72,700&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+  /* ------------------------------------------------------------------
+     Colour system. Two data hues carry the whole story — teal for the BNP,
+     orange for Jamaat — and every other scale is built so it can never be
+     mistaken for them:
+       party      BNP=teal · Jamaat=orange · NCP=violet · IAB=blue · KM=ochre
+       sex        men=slate · women=crimson   (women's chapters only)
+       sequential turnout=teal · youth=green · minority share=violet
+       diverging  teal <- grey -> orange
+     The -ink variants are the darkened forms used wherever a hue has to
+     carry text or a hairline; the plain form is for fills only.
+     ------------------------------------------------------------------ */
+  :root{
+    --bg:#ffffff; --surface:#ffffff; --surface2:#ebebeb; --line:#dcdcdc; --grid:#ececec;
+    --ink:#121212; --ink2s:#363636; --muted:#727272;
+    --bnp:#367b7f; --jam:#f28124; --bnp-ink:#2b6367; --jam-ink:#b9590a;
+    --ncp:#7b5ea7; --iab:#326891; --km:#a8761f; --km-ink:#7d5610; --youth:#4a854a;
+    --oth:#8a8f92; --flat:#c9c9c9;
+    --men:#3f6f96; --women:#a33d55;
+    --accent:#367b7f; --tint:#f6f6f4;
+    --serif:"Newsreader",Georgia,"Times New Roman",serif;
+    --sans:"Libre Franklin","Helvetica Neue",Helvetica,Arial,sans-serif;
+    --s1:8px; --s2:14px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;scroll-padding-top:48px;}
+  body{font-family:var(--sans);background:var(--bg);color:var(--ink);
+       font-size:17px;line-height:1.62;-webkit-font-smoothing:antialiased;overflow-x:hidden;}
+  .wrap{max-width:1040px;margin:0 auto;padding-inline:clamp(20px,4vw,42px);}
+
+  /* ------------------------------------------------- chrome */
+  .skip-link{position:fixed;left:12px;top:-80px;z-index:3000;background:var(--ink);color:#fff;
+    padding:10px 14px;font-size:13px;font-weight:600;text-decoration:none;}
+  .skip-link:focus{top:12px;}
+  .story-nav{position:fixed;inset:0 0 auto 0;height:46px;z-index:1100;display:flex;align-items:center;
+    justify-content:space-between;padding:0 clamp(16px,3vw,42px);background:var(--bg);
+    border-bottom:1px solid var(--line);transform:translateY(-110%);transition:transform .25s ease;
+    visibility:hidden;pointer-events:none;}
+  .story-nav.is-visible{transform:translateY(0);visibility:visible;pointer-events:auto;}
+  .story-brand{font-family:var(--serif);font-weight:700;font-size:15px;color:var(--ink);
+    text-decoration:none;white-space:nowrap;}
+  .story-brand span{font:600 10px/1 var(--sans);letter-spacing:.1em;text-transform:uppercase;
+    color:var(--muted);margin-left:8px;}
+  .story-navlinks{display:flex;gap:clamp(12px,2.2vw,28px);align-items:center;}
+  .story-navlinks a{color:var(--muted);font-size:10.5px;font-weight:600;letter-spacing:.07em;
+    text-transform:uppercase;text-decoration:none;}
+  .story-navlinks a.is-current,.story-navlinks a:hover{color:var(--ink);}
+  .story-chapter{font-size:11px;color:var(--muted);display:none;}
+  .reading-progress{position:absolute;left:0;right:0;bottom:-1px;height:2px;background:transparent;}
+  .reading-progress span{display:block;width:0;height:100%;background:var(--accent);transform-origin:left center;}
+
+  /* ------------------------------------------------- hero */
+  .hero{min-height:100svh;padding:clamp(92px,13vh,150px) clamp(22px,5vw,72px) 44px;text-align:left;
+    display:grid;grid-template-columns:minmax(0,1.15fr) minmax(280px,.85fr);grid-template-rows:auto auto;
+    gap:42px 7vw;align-content:center;max-width:1500px;margin:0 auto;position:relative;}
+  .hero-copy{max-width:790px;align-self:center;}
+  .kicker{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--ink2s);margin-bottom:28px;}
+  h1{font-family:var(--serif);font-weight:700;font-size:clamp(54px,7.3vw,110px);line-height:.92;
+     letter-spacing:-.026em;margin:0;max-width:9.6ch;}
+  h1 em{display:block;font-style:italic;font-weight:700;}
+  .stand{font-family:var(--serif);font-size:clamp(20px,2.1vw,28px);line-height:1.34;
+    color:var(--ink2s);max-width:690px;margin:34px 0 0;}
+  .stand.secondary{font-family:var(--sans);font-size:14.5px;line-height:1.62;max-width:640px;color:var(--muted);}
+  .byline{font-size:12.5px;margin-top:26px;color:var(--muted);}
+  .byline b{color:var(--ink2s);font-weight:600;}
+  .source-line{font-size:11.5px;line-height:1.55;color:var(--muted);max-width:68ch;margin-top:12px;}
+  .hero-figure{align-self:stretch;min-height:520px;position:relative;
+    display:flex;flex-direction:column;justify-content:flex-end;
+    padding:28px 0 28px clamp(24px,4vw,60px);overflow:hidden;}
+  .hero-figure .mega{font-size:clamp(66px,8vw,124px);font-weight:700;line-height:.82;
+    letter-spacing:-.055em;font-variant-numeric:tabular-nums;}
+  .hero-figure .mega-label{max-width:21ch;font-size:12px;line-height:1.5;color:var(--muted);
+    margin-top:20px;text-wrap:balance;}
+  .hero-meta{grid-column:1/-1;border-top:1px solid var(--ink);border-bottom:1px solid var(--line);
+    display:grid;grid-template-columns:repeat(5,1fr);}
+  .statwall{display:contents;}
+  .statwall .s{padding:18px 18px 17px 0;border-right:1px solid var(--line);margin-right:18px;}
+  .statwall .s:last-child{border-right:0;margin-right:0;}
+  .statwall .n{font-size:clamp(19px,2vw,27px);font-weight:700;letter-spacing:-.025em;
+    font-variant-numeric:tabular-nums;line-height:1.05;white-space:nowrap;}
+  .statwall .l{font-size:10.5px;color:var(--muted);margin-top:8px;line-height:1.42;max-width:19ch;}
+  .scrollcue{position:absolute;right:clamp(22px,5vw,72px);bottom:18px;font-size:10px;
+    letter-spacing:.13em;text-transform:uppercase;color:var(--muted);}
+
+  /* ------------------------------------------------- prose */
+  section.prose{padding:clamp(70px,9vw,118px) 0;}
+  .chno{font-size:10.5px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;
+    color:var(--muted);margin-bottom:18px;}
+  .chno b{color:var(--ink2s);}
+  h2{font-family:var(--serif);font-weight:700;font-size:clamp(33px,4.5vw,54px);line-height:1.06;
+     letter-spacing:-.018em;max-width:21ch;margin-bottom:24px;}
+  h3{font-family:var(--serif);font-size:clamp(22px,2.7vw,29px);font-weight:700;line-height:1.2;
+     letter-spacing:-.012em;margin:62px 0 var(--s1);}
+  p.lede{font-family:var(--serif);font-size:clamp(19px,2vw,21.5px);line-height:1.56;
+    max-width:660px;margin-bottom:20px;color:var(--ink2s);}
+  p.lede strong{font-weight:700;color:var(--ink);}
+  .hl{font-weight:700;color:var(--ink);}
+
+  .aside{max-width:720px;margin:42px 0;padding:24px 26px;background:var(--tint);
+    font-size:14.5px;line-height:1.6;color:var(--ink2s);}
+  .aside b{color:var(--ink);font-weight:600;}
+  .aside .t{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--muted);margin-bottom:9px;}
+  .aside p{margin-bottom:10px;}
+  .aside p:last-child{margin-bottom:0;}
+  .correction-note{max-width:720px;margin:58px 0;padding:22px 0;border-top:1px solid var(--line);
+    border-bottom:1px solid var(--line);font-size:14px;line-height:1.62;color:var(--ink2s);}
+  .correction-note b{color:var(--ink);font-weight:600;}
+  .closing{max-width:850px;padding-block:clamp(82px,11vw,145px)!important;}
+  .closing p{font-family:var(--serif);font-size:clamp(21px,2.3vw,26px);line-height:1.48;
+    max-width:32ch;color:var(--ink2s);margin:0 0 28px;}
+  .closing p:first-of-type{color:var(--ink);}
+  .mini-head{font:700 10px/1.2 var(--sans);letter-spacing:.14em;text-transform:uppercase;
+    color:var(--muted);margin-bottom:16px;}
+
+  /* ------------------------------------------------- figures and charts */
+  figure{margin:58px 0;}
+  figure>div[id]{overflow-x:auto;overscroll-behavior-inline:contain;scrollbar-width:thin;}
+  figcaption{font-size:14.5px;font-weight:700;line-height:1.3;letter-spacing:-.005em;
+    text-align:center;text-wrap:balance;}
+  .sub{font-size:12px;color:var(--muted);line-height:1.5;margin-top:5px;margin-bottom:var(--s2);
+    max-width:76ch;margin-inline:auto;text-align:center;text-wrap:balance;}
+  .legend{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin:0 0 var(--s2);}
+  .legend .i{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--ink2s);font-weight:500;}
+  .sw{width:11px;height:11px;flex-shrink:0;box-shadow:inset 0 0 0 1px rgba(0,0,0,.16);}
+  .note{font-size:11.5px;color:var(--muted);line-height:1.6;max-width:78ch;
+    margin-top:var(--s2);padding-top:10px;border-top:1px solid var(--grid);}
+
+  /* chart SVGs only — Leaflet's overlay SVG sizes itself via attributes and must
+     never inherit this (width:100%/height:auto collapses it to 0×0) */
+  svg:not([class*="leaflet"]){display:block;width:100%;height:auto;overflow:visible;}
+  .leaflet-container svg{overflow:hidden;}
+  figure svg rect,figure svg circle,.stagechart svg rect,.stagechart svg circle{transition:opacity .12s;}
+  figure svg rect:hover,figure svg circle:hover,.stagechart svg rect:hover,.stagechart svg circle:hover{opacity:.8;}
+  .ax{fill:var(--muted);font-size:11px;font-variant-numeric:tabular-nums;}
+  .val{fill:var(--ink);font-size:12px;font-weight:600;font-variant-numeric:tabular-nums;}
+  .cat{fill:var(--ink2s);font-size:12px;font-weight:500;}
+  .gl{stroke:var(--grid);stroke-width:1;}
+  .base{stroke:var(--line);stroke-width:1;}
+
+  /* ------------------------------------------------- scrolly scenes */
+  .scene{position:relative;background:var(--bg);}
+  .stage{position:sticky;top:46px;height:calc(100svh - 46px);display:flex;flex-direction:column;
+         justify-content:center;background:var(--bg);z-index:1;}
+  .stage .inner{width:100%;height:100%;margin:0;position:relative;
+    display:flex;flex-direction:column;justify-content:center;}
+  .stage .stagemap{height:100%;flex:1 1 auto;background:var(--bg);position:relative;}
+  .stage .stagechart{width:min(1120px,92vw);margin:auto;max-height:calc(100svh - 96px);
+    padding:34px 38px 26px;overflow:hidden;background:var(--bg);}
+  .stage .stitle{font-size:14.5px;font-weight:700;margin-bottom:2px;text-align:center;text-wrap:balance;}
+  .stage .ssub{font-size:12px;color:var(--muted);margin-bottom:12px;text-align:center;text-wrap:balance;}
+  .maplegend{position:absolute;right:18px;bottom:18px;z-index:900;background:var(--bg);
+    border:1px solid var(--line);padding:10px 13px;font-size:11.5px;color:var(--ink2s);
+    max-width:240px;line-height:1.5;}
+  .maplegend b{font-size:11px;font-weight:700;color:var(--ink);}
+  .maplegend .r{display:flex;align-items:center;gap:7px;margin-top:3px;}
+  .maplegend .b{width:14px;height:11px;flex-shrink:0;box-shadow:inset 0 0 0 1px rgba(0,0,0,.16);}
+  .leaflet-container{background:var(--bg);font:12px var(--sans);}
+  .leaflet-tooltip{font:12.5px var(--sans);line-height:1.5;background:var(--bg);color:var(--ink);
+    border:1px solid var(--line);border-radius:0;box-shadow:none;padding:7px 10px;}
+  .leaflet-tooltip-top:before{border-top-color:var(--line);}
+  .leaflet-tooltip-bottom:before{border-bottom-color:var(--line);}
+  .leaflet-tooltip-left:before{border-left-color:var(--line);}
+  .leaflet-tooltip-right:before{border-right-color:var(--line);}
+  .leaflet-control-container{font-family:var(--sans);}
+  .stagemap.leaflet-container{touch-action:pan-y!important;}
+  .steps{position:relative;z-index:5;pointer-events:none;width:min(1280px,100%);margin:0 auto;}
+  .step{min-height:82vh;display:flex;align-items:center;}
+  .step .card{pointer-events:auto;max-width:400px;margin-left:clamp(20px,5vw,76px);
+    padding:22px 24px 23px;background:var(--bg);border:1px solid var(--line);
+    font-family:var(--serif);font-size:17px;line-height:1.5;color:var(--ink2s);
+    transition:opacity .25s ease,transform .25s ease;}
+  .step .card b{color:var(--ink);font-weight:700;}
+  .step .card .k{font:700 9.5px/1.2 var(--sans);letter-spacing:.14em;text-transform:uppercase;
+    color:var(--muted);display:block;margin-bottom:12px;}
+  .scrolly-ready .step:not(.is-active) .card{opacity:.36;transform:translateY(10px);}
+  .scene--right .step .card{margin-left:auto;margin-right:clamp(20px,5vw,76px);}
+  .step:last-child{min-height:92svh;}
+  @media(min-width:1401px){
+    /* the card lane is derived from .steps (min(1280px,100%), centred) and its own
+       right margin, so the chart's width has to be too, not from the viewport */
+    .scene--chart .stage .stagechart{
+      width:min(980px,calc(50% + 216px - 2*clamp(20px,5vw,76px)));
+      margin-inline:clamp(20px,5vw,76px) auto;padding-inline:0;}
+    .scene--chart .stagechart .ax{font-size:13px;}
+  }
+  @media(max-width:1400px){
+    .scene--chart .stage{height:calc(66svh - 46px);justify-content:flex-start;}
+    .scene--chart .stage .stagechart{width:min(900px,100%);height:100%;max-height:100%;
+      padding:20px 16px 10px;margin-inline:auto;}
+    .scene--chart .steps{padding-top:6svh;}
+    .scene--chart .step{min-height:84svh;align-items:flex-end;padding-bottom:5svh;}
+    .scene--chart.scene--right .step .card{max-width:560px;margin-inline:auto;}
+  }
+
+  /* ------------------------------------------------- footer */
+  footer{padding:0 0 90px;border-top:1px solid var(--line);color:var(--muted);font-size:13px;line-height:1.7;}
+  footer h3{font-family:var(--sans);font-size:13px;font-weight:700;color:var(--ink2s);
+    letter-spacing:0;margin:26px 0 6px;}
+  footer code{background:var(--tint);padding:1px 5px;font-size:12px;}
+  footer p{margin-bottom:10px;max-width:780px;}
+  footer a{color:var(--accent);}
+  .methodology>summary{list-style:none;cursor:pointer;padding:24px 0;font-weight:700;font-size:11.5px;
+    letter-spacing:.12em;text-transform:uppercase;color:var(--ink);}
+  .methodology>summary::-webkit-details-marker{display:none;}
+  .methodology>summary::after{content:"+";float:right;font-size:20px;font-weight:400;line-height:.7;}
+  .methodology[open]>summary::after{content:"−";}
+  .method-body{border-top:1px solid var(--grid);padding-top:16px;column-count:2;column-gap:52px;}
+  .method-body h3{break-inside:avoid;break-after:avoid;}
+  .method-body p{break-inside:avoid;}
+
+  .tt{position:fixed;pointer-events:none;z-index:1200;opacity:0;background:var(--ink);color:#fff;
+      padding:9px 12px;font-size:12.5px;line-height:1.5;
+      transition:opacity .1s;max-width:270px;font-variant-numeric:tabular-nums;}
+
+  /* ------------------------------------------------- responsive */
+  @media(max-width:900px){
+    .hero{grid-template-columns:1fr;min-height:auto;padding-top:110px;gap:30px;}
+    .hero-figure{min-height:230px;border-top:1px solid var(--line);padding:44px 0 4px;}
+    .hero-meta{grid-template-columns:repeat(3,1fr);}
+    .statwall .s:nth-child(3){border-right:0;}
+    .story-navlinks{display:none;}.story-chapter{display:block;}
+  }
+  @media(max-width:700px){
+    body{font-size:16px;}
+    .hero{padding-inline:20px;padding-bottom:68px;}
+    h1{font-size:clamp(50px,15vw,72px);}
+    .hero-meta{grid-template-columns:repeat(2,1fr);}
+    .statwall .s{border-right:0;border-bottom:1px solid var(--grid);margin:0;padding-right:10px;}
+    .statwall .s:nth-child(odd){border-right:1px solid var(--line);margin-right:14px;}
+    .statwall .s:last-child{grid-column:1/-1;border-bottom:0;border-right:0;margin-right:0;}
+    .stage{top:46px;height:calc(66svh - 46px);justify-content:flex-start;}
+    .stage .stagechart{width:100%;max-height:100%;height:100%;padding:16px 12px 10px;overflow:hidden;}
+    .stage .stagemap{height:100%;}
+    .steps{padding-top:8svh;}
+    .step{min-height:86svh;align-items:flex-end;padding-bottom:5svh;}
+    .step .card,.scene--right .step .card{max-width:none;margin-inline:12px;padding:19px 20px;
+      font-size:16px;line-height:1.46;}
+    .maplegend{right:8px;bottom:8px;max-width:200px;font-size:10px;padding:7px 9px;}
+    .method-body{column-count:1;}
+    figure{margin-block:44px;overflow:visible;}
+    figure>div[id] svg{width:720px;min-width:720px;}
+    figure>div[id] svg .ax{font-size:15px!important;}
+    figure>div[id] svg .val{font-size:15.5px!important;}
+    figure>div[id] svg .cat{font-size:16px!important;}
+    .stagechart #sc2,.stagechart #sc4{overflow-x:hidden;}
+    .stagechart #sc2 svg,.stagechart #sc4 svg{width:100%;min-width:0;}
+    .stagechart .ax{font-size:13.5px;}.stagechart .val{font-size:13.5px;}.stagechart .cat{font-size:14px;}
+    figure .sub::after{content:" Swipe the chart for detail →";color:var(--muted);white-space:nowrap;}
+  }
+  @media(prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto;}
+    *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;}
+  }
+</style>
+</head>
+<body>
+<a class="skip-link" href="#story">Skip to the story</a>
+<nav class="story-nav" id="story-nav" aria-label="Story chapters">
+  <a class="story-brand" href="#top">Netra News <span>Data</span></a>
+  <div class="story-navlinks">
+    <a href="#scene-result" data-nav="scene-result">Result</a>
+    <a href="#below-seat" data-nav="below-seat">Centres</a>
+    <a href="#scene-places" data-nav="scene-places">Turnout</a>
+    <a href="#scene-age" data-nav="scene-age">Age</a>
+    <a href="#scene-women" data-nav="scene-women">Women</a>
+    <a href="#scene-faith" data-nav="scene-faith">Communities</a>
+    <a href="#scene-local" data-nav="scene-local">Local</a>
+  </div>
+  <div class="story-chapter" id="story-chapter">The result</div>
+  <div class="reading-progress" aria-hidden="true"><span id="reading-progress"></span></div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="hero-copy">
+    <span class="kicker">Bangladesh election 2026</span>
+    <h1>How Bangladesh <em>Voted</em></h1>
+    <p class="stand">
+      The result looked simple: 209 seats for the BNP. But inside 42,382 polling centres,
+      Bangladesh’s landslide broke into thousands of sharply different local contests.
+    </p>
+    <p class="stand secondary">
+      Nearly 180 million people live in Bangladesh. The country had waited since 2008 for a
+      genuinely competitive parliamentary election. We followed the vote from the national map
+      into city wards, small towns and villages — and found an election that changed depending
+      on how closely you looked.
+    </p>
+    <p class="byline"><b>By the Netra News data desk</b> · Updated Aug. 2, 2026</p>
+    <p class="source-line">Based on official results and the 2026 voter roll. The figures show
+      how places voted; they do not reveal any individual ballot.</p>
+  </div>
+  <div class="hero-figure" aria-hidden="true">
+    <div class="mega">42,382</div>
+    <div class="mega-label">polling-centre returns, opened one by one</div>
+  </div>
+  <div class="hero-meta">
+    <div class="statwall">
+      <div class="s"><div class="n" id="h-roll">—</div><div class="l">names decoded from the voter roll</div></div>
+      <div class="s"><div class="n" id="h-centres">42,382</div><div class="l">published polling-centre returns</div></div>
+      <div class="s"><div class="n" id="h-cast">—</div><div class="l">valid ballots counted</div></div>
+      <div class="s"><div class="n" id="h-turnout">—</div><div class="l">of registered voters cast a valid ballot</div></div>
+      <div class="s"><div class="n" id="h-first">—</div><div class="l">of age-matched voters were too young to vote in 2008</div></div>
+    </div>
+  </div>
+  <div class="scrollcue">Scroll to enter ↓</div>
+</header>
+
+<main id="story">
+<!-- ================================================================ SCENE 1 · THE RESULT -->
+<div class="scene" id="scene-result" role="region" aria-label="The national result">
+  <div class="stage"><div class="inner">
+    <div class="stagemap" id="map1" role="group" aria-label="Map of Bangladesh constituencies, changing as the story scrolls"></div>
+    <div class="maplegend" id="leg1"></div>
+  </div></div>
+  <div class="steps" data-map="m1">
+    <div class="step" data-view="winner"><div class="card"><span class="k">The result</span>
+      <b>By the end, most of the map was teal.</b> The BNP won
+      <span id="s1-bnp">—</span> of <span id="s1-seats">—</span> declared seats, on
+      <b id="s1-bnps">—</b> of valid ballots in the centre returns.</div></div>
+    <div class="step" data-view="jamonly"><div class="card">
+      <b>Jamaat won <span id="s1-jam">—</span> seats.</b> Twenty-five were in Khulna division,
+      forming a belt through Jashore, Satkhira and Jhenaidah; another cluster lay along the
+      northern border. Its voters were fewer, but clustered where they could win seats.</div></div>
+    <div class="step" data-view="margin"><div class="card">
+      <b>Nearly a third of the vote produced less than a quarter of the seats.</b> Jamaat took
+      <b id="s1-jams">—</b> of valid ballots in the centre returns and
+      <b id="s1-jam-seatshare">—</b> of declared seats — a gap of
+      <b id="s1-jam-gap">—</b> points.</div></div>
+  </div>
+</div>
+
+<div class="wrap"><section class="prose">
+  <h2>The landslide was made of 42,382 smaller contests</h2>
+  <p class="lede">
+    A parliamentary seat can contain several hundred polling centres. Add them together and
+    one candidate wins. Pull them apart and the smooth national map begins to fracture —
+    sometimes dramatically, even inside the same constituency.
+  </p>
+  <p class="lede">
+    Beyond the two largest parties, <strong id="r-indseats">—</strong> independents won seats
+    and the NCP took <strong id="r-ncpseats">—</strong>. Bangladesh Khelafat Majlis won two;
+    Khelafat Majlis, Islami Andolan Bangladesh, Gono Odhikar Parishad, Bangladesh Jatiya Party
+    and Ganosamhati Andolon won one each.
+  </p>
+  <div class="aside"><div class="t">About the count</div><p>The centre file covers 297
+    constituencies. Sherpur-3 did not vote on Feb. 12 after a candidate died. Chattogram-2 and
+    Chattogram-4 were missing from the published centre returns, so centre-based measures do not
+    include them. Some voter-roll totals cover a slightly different set of seats.</p></div>
+  <figure>
+    <figcaption>The same share of votes can produce a very different share of seats</figcaption>
+    <div class="sub">Each bloc’s share of valid ballots in the published centre file, compared with its official share of 297 declared seats</div>
+    <div id="c1"></div>
+    <div class="note">Blocs follow declared electoral alliances. Bangladesh elects one member
+      from each constituency. A vote affects the seat count only where it helps a candidate
+      finish first, so where support is concentrated matters. These vote shares come from the
+      published centre returns; the EC’s later party-wise release reported 49.97 percent for
+      the BNP and 31.76 percent for Jamaat, against 50.15 and 31.54 percent here.</div>
+  </figure>
+</section></div>
+
+<!-- ================================================================ SCENE 1B · CENTRE LEVEL -->
+<div class="wrap"><section class="prose" id="below-seat">
+  <div class="chno">Inside the seat</div>
+  <h2>One constituency, many elections</h2>
+  <p class="lede">
+    On paper, Khulna-6 was a solid Jamaat win: 53.3 percent. On the ground, its share ran from
+    3.1 percent at one polling centre to 86.3 percent at another. They belonged to the same
+    constituency, but barely resembled the same election.
+  </p>
+  <figure>
+    <figcaption>How far a seat can stretch</figcaption>
+    <div class="sub">Jamaat’s polling-centre range after setting aside the highest and lowest 10 percent · the 60 widest seats</div>
+    <div class="legend" id="leg-ch3"></div>
+    <div id="ch3"></div>
+    <div class="note">Each line covers the middle 80 percent of polling centres in a seat.
+      The dot is a simple average of those centre results, not the official constituency result.</div>
+  </figure>
+  <p class="lede">
+    Khulna-6 is the extreme. The wider pattern is still striking. In the middle seat, the gap
+    between a relatively weak and strong polling centre was
+    <strong id="ce-spread">—</strong> points for Jamaat and
+    <strong id="ce-bspread">—</strong> for the BNP. Jamaat’s spread exceeded 30 points in
+    <strong id="ce-over30">—</strong> seats.
+  </p>
+  <div class="aside"><div class="t">A necessary limit</div><p>These comparisons include only
+    seats where the party actually ran. Jamaat was absent from <b id="ce-jamnostand">—</b>;
+    the BNP from <b id="ce-bnpnostand">—</b>.</p></div>
+
+  <h3>The seat line hides half the difference</h3>
+  <p class="lede">
+    How much of this unevenness comes from one constituency voting differently from another?
+    Only about half. The rest is found among polling centres inside the same seat.
+  </p>
+  <p class="lede">
+    <span class="hl">About <strong id="ce-jamicc">—</strong> of the centre-to-centre
+    difference in Jamaat’s support was found inside seats; for the BNP it was
+    <strong id="ce-bnpicc">—</strong>.</span> Turnout was more regional: only
+    <strong id="ce-toicc">—</strong> of its centre-to-centre difference was found inside seats.
+  </p>
+  <figure>
+    <figcaption>How much the seat total smooths away</figcaption>
+    <div class="sub">Polling-centre differences split between seats and inside them · only seats where each party ran</div>
+    <div class="legend" id="leg-ch2"></div>
+    <div id="ch2"></div>
+    <div class="note" id="ch2n"></div>
+  </figure>
+  <figure>
+    <figcaption>Where each party’s vote piled up</figcaption>
+    <div class="sub">Share of ballots cast at weak, middling and strong polling centres for each party · only seats where it ran</div>
+    <div class="legend" id="leg-ch1"></div>
+    <div id="ch1"></div>
+    <div class="note" id="ch1n"></div>
+  </figure>
+  <p class="lede">
+    The BNP drew far more of its vote from blowout centres: <strong id="ce-bnp70">—</strong>
+    came from centres where it topped 70 percent, against <strong id="ce-jam70">—</strong> for
+    Jamaat. Jamaat’s vote gathered more often in the middle.
+  </p>
+</section></div>
+
+<!-- ================================================================ SCENE 2 · PLACE AND PARTICIPATION -->
+<div class="scene scene--right scene--chart" id="scene-places" role="region" aria-label="Place and participation">
+  <div class="stage"><div class="inner">
+    <div class="stagechart" id="stage2">
+      <div class="stitle" id="st2-t">Place and participation</div>
+      <div class="ssub" id="st2-s"></div>
+      <div id="sc2"></div>
+    </div>
+  </div></div>
+  <div class="steps" data-chart="s2">
+    <div class="step" data-view="turnout"><div class="card"><span class="k">Place and participation</span>
+      <b>The sharpest divide was turnout.</b> The share of registered voters casting a valid
+      ballot was <b id="s2-tou">—</b> in villages, <b id="s2-tom">—</b> in small towns and
+      <b id="s2-tocc">—</b> in big cities. The cities trailed the villages by 14.4 points.</div></div>
+    <div class="step" data-view="share"><div class="card">
+      <b>The two largest parties changed surprisingly little from village to city.</b> The NCP
+      was the exception: 8.0 percent in the large cities, against 2.7 percent in union areas.
+      And union areas still held <b id="s2-u">—</b> of the electorate.</div></div>
+    <div class="step" data-view="sexto"><div class="card">
+      <b>The women’s side of the polling station fell further behind in the cities.</b> Women-only
+      centres returned <b id="s2-gu">—</b> fewer valid ballots per 100 registered voters than
+      men-only centres in villages, and <b id="s2-gc">—</b> fewer in big cities. At women-only
+      city centres, the figure was <b id="s2-fcc">—</b>.</div></div>
+    <div class="step" data-view="roll"><div class="card">
+      <b>The city rolls looked older, too.</b> Only <b id="s2-cityu35">—</b> of entries
+      in big-city seats were under 35, compared with <b id="s2-ruralu35">—</b> in rural seats.
+      One likely reason: people move to cities without moving their registration. The roll does
+      not show where they actually live.</div></div>
+  </div>
+</div>
+
+<div class="wrap"><section class="prose">
+  <h2>The cities did not vote like the rest of Bangladesh</h2>
+  <p class="lede">Not mainly because they chose different parties. They cast far fewer ballots.
+    The drop was gentle from villages to small towns, then steep: 60.5 percent in union areas,
+    58.7 percent in municipalities and just 46.1 percent in city corporations.</p>
+  <figure>
+    <figcaption>The urban break</figcaption>
+    <div class="sub">Party support and ballots returned in villages, small towns and big cities</div>
+    <div class="legend" id="leg-c2"></div>
+    <div id="c2"></div>
+    <div class="note">The comparison covers 10,468 single-sex centres in 226 constituencies,
+      wherever they account for at least a tenth of registered voters. It describes those
+      polling places, not individual voters.</div>
+  </figure>
+</section></div>
+
+<!-- ================================================================ SCENE 3 · THE AGE OF THE ROLL -->
+<div class="scene" id="scene-age" role="region" aria-label="The age of the voter roll">
+  <div class="stage"><div class="inner">
+    <div class="stagemap" id="map2" role="group" aria-label="Map of the share of voter-roll entries under age 35 by constituency"></div>
+    <div class="maplegend" id="leg2"></div>
+  </div></div>
+  <div class="steps" data-map="m2">
+    <div class="step" data-view="u35"><div class="card"><span class="k">The age of the roll</span>
+      <b>Bangladesh’s registered electorate had a median age of
+      <span id="s3-med">—</span>.</b> Darker seats had more voters under 35; unshaded seats did
+      not have enough reliable matches to show.</div></div>
+    <div class="step" data-view="u35"><div class="card">
+      <b><span id="s3-first">—</span> of unique roll entries — about
+      <span id="s3-firstn">—</span> million people — were too young to vote in 2008.</b>
+      For them, 2026 was the first genuinely competitive parliamentary election of their
+      adult lives.</div></div>
+    <div class="step" data-view="u35"><div class="card">
+      <b>From a distance, younger places appeared to vote less. Up close, the direction
+      reversed.</b> Inside the same seat, a union whose under-35 share was 10 points higher
+      returned 3.3 more valid ballots for every 100 registered voters.</div></div>
+    <div class="step" data-view="u35"><div class="card">
+      <b>The party result turned as well.</b> Inside the same seat, a union with an under-35
+      share 10 points higher was linked to 4.2 points more for Jamaat and 5.2 points less for
+      the BNP. That describes younger places — not the ballots of young people.</div></div>
+  </div>
+</div>
+
+<div class="wrap"><section class="prose">
+  <h2>A generation with no election to look back on</h2>
+  <p class="lede">Some 44 million people on the roll were too young to vote in 2008. They were
+    not necessarily first-time voters. But 2026 was the first genuinely competitive
+    parliamentary election of their adult lives. Together, they made up more than a third of
+    the decoded roll.</p>
+  <figure>
+    <figcaption>The electorate by age</figcaption>
+    <div class="sub">All <span id="a-rolln">—</span> unique voters on the decoded roll (duplicate registrations removed), by age on election day</div>
+    <div id="c4"></div>
+    <div class="note" id="a-bandnote"></div>
+  </figure>
+  <figure>
+    <figcaption>Zooming in changes the direction</figcaption>
+    <div class="sub">How younger places lined up with the result — first across whole constituencies, then among unions inside the same seat</div>
+    <div class="legend" id="leg-age-scale"></div>
+    <div id="c-age-scale"></div>
+    <div class="note">Inside the same seat, a union with a 10-point larger under-35 share
+      recorded 4.2 points more for Jamaat, 5.2 points less for the BNP and a 3.3-point higher
+      share of valid ballots among registered voters. Age gaps that large inside one seat are
+      unusual. This covers rural unions, not towns or city wards, and cannot identify the vote
+      of any age group.</div>
+  </figure>
+</section></div>
+
+<!-- ================================================================ SCENE 4 · WOMEN -->
+<div class="scene scene--right scene--chart" id="scene-women" role="region" aria-label="Evidence from single-sex polling centres">
+  <div class="stage"><div class="inner">
+    <div class="stagechart" id="stage4">
+      <div class="stitle" id="st4-t">What single-sex centres show</div>
+      <div class="ssub" id="st4-s"></div>
+      <div id="sc4"></div>
+    </div>
+  </div></div>
+  <div class="steps" data-chart="s4">
+    <div class="step" data-view="rej"><div class="card"><span class="k">Women-only centres</span>
+      <b>The clearest difference was in rejected ballots.</b>
+      <b id="s4-rejf">—</b> of cast ballots there were ruled invalid, compared with
+      <b id="s4-rejm">—</b> at men-only centres. The gap was <b id="s4-rejg">—</b> points
+      and appeared in villages, towns and big cities.</div></div>
+    <div class="step" data-view="gap"><div class="card">
+      <b>Taken together, women-only centres gave Jamaat <span id="s4-gap">—</span> points
+      more than men-only centres.</b> The BNP’s share barely moved. But the two kinds of centre
+      are not spread evenly across the country. Geography could be creating part of that gap.</div></div>
+    <div class="step" data-view="paired"><div class="card">
+      <b>So we put the comparison under one roof.</b> We matched the women’s and men’s sides of
+      1,204 polling buildings. In villages, Jamaat’s lead over the BNP was 0.82 points larger
+      on the women’s side. In small towns, it was 3.13 points larger.</div></div>
+    <div class="step" data-view="paired"><div class="card">
+      <b>The big cities broke the pattern.</b> In the same building, the women’s-side margin
+      moved 2.97 points toward the BNP. The matched address makes this an unusually close
+      comparison. It still cannot tell us how any individual woman voted.</div></div>
+  </div>
+</div>
+
+<div class="wrap"><section class="prose">
+  <h2>One building, two electorates</h2>
+  <p class="lede">Across Bangladesh, one school or community hall can contain two polling
+    centres: one for women, another for men. Those paired rooms offer an unusually close look
+    at the two electorates. What they show is not one national “women’s vote.” Place changes
+    the picture.</p>
+  <figure>
+    <figcaption>More ballots were rejected at women-only centres everywhere</figcaption>
+    <div class="sub">Rejected ballots as a share of all ballots cast at single-sex centres</div>
+    <div id="c10"></div>
+    <div class="note">The returns show the gap, but not its cause. Ballot design, voter
+      assistance, deliberate spoiling and other explanations cannot be separated here.</div>
+  </figure>
+  <figure>
+    <figcaption>Under the same roof, the political gap changed with place</figcaption>
+    <div class="sub">Change on the women’s side in Jamaat’s margin over the BNP · 1,204 exactly matched polling buildings</div>
+    <div class="legend" id="leg-women-paired"></div>
+    <div id="c-women-paired"></div>
+    <div class="note">Solid dots match women’s and men’s centres in the same building; hollow
+      dots compare all centres in that kind of place. Lines show the likely range. City
+      buildings dominate the exact matches, so no national total is shown.</div>
+  </figure>
+</section></div>
+
+<!-- ================================================================ SCENE 5 · FAITH -->
+<div class="wrap"><section class="prose">
+  <div class="chno">Communities</div>
+  <h2>What the seat map hid about minority communities</h2>
+  <p class="lede">No ballot records a voter’s religion, and neither does the voter roll. We
+    used names on the roll to estimate where minority communities were concentrated. This is
+    not a count of Hindu, Buddhist, Christian or Indigenous votes. It is a map of where those
+    communities were registered.</p>
+</section></div>
+
+<div class="scene" id="scene-faith" role="region" aria-label="Estimated minority-community share at constituency and union scale">
+  <div class="stage"><div class="inner">
+    <div class="stagemap" id="map3" role="group" aria-label="Map of estimated minority-community share, changing from constituency to union scale"></div>
+    <div class="maplegend" id="leg3"></div>
+  </div></div>
+  <div class="steps" data-map="m3">
+    <div class="step" data-view="nmwin"><div class="card"><span class="k">Constituency scale</span>
+      <b>From the national map, two patterns appear to overlap.</b> Several seats with larger
+      estimated Hindu shares lie in the south-west, where Jamaat was strongest. The orange
+      outlines mark seats Jamaat won. The overlap shows where both occurred — not how a
+      community voted.</div></div>
+    <div class="step" data-view="nmwin"><div class="card">
+      <b>Shrink every constituency to one average and the line is almost flat.</b> Minority
+      concentration and Jamaat’s share barely moved together. But one constituency can contain
+      dozens of places that look nothing like one another.</div></div>
+    <div class="step" data-view="unit"><div class="card">
+      <b>So we opened the seats up.</b> We could compare <b id="s5-nunits">—</b> rural unions
+      across 267 constituencies; 4,280 could be placed on this map. Purple marks unions with a
+      larger estimated minority share than the rest of their seat. Gold marks those with a
+      smaller share.</div></div>
+    <div class="step" data-view="unitjam"><div class="card">
+      <b>Inside the same constituency, the divide comes into view.</b> A union whose estimated
+      minority share was 10 points higher than its seat’s gave Jamaat about
+      <b id="s5-slope">—</b> points less and the BNP <b id="s5-bslope">—</b> points more.
+      This is a difference between places, not a ballot-by-ballot count.</div></div>
+    <div class="step" data-view="unitjam"><div class="card">
+      <b>The divide was sharpest in the south-west.</b> Jamaat performed strongly across the
+      region. Inside those same seats, however, unions with larger estimated minority shares
+      tended to give it less support.</div></div>
+    <div class="step" data-view="unitjam"><div class="card">
+      <b>Minority-heavy unions did not show a clear turnout gap.</b> They returned no
+      consistently smaller — or larger — share of valid ballots than elsewhere in the same seat.</div></div>
+  </div>
+</div>
+
+<div class="wrap"><section class="prose">
+  <div class="correction-note"><b>Correction, Aug. 2, 2026.</b> An earlier edition said the
+    constituency figures showed no local pattern. A closer, union-by-union look found one.</div>
+  <p class="lede">
+    The apparent contradiction is the point. Jamaat performed strongly across the south-west,
+    including in seats with sizeable minority populations. Inside many of those same seats,
+    however, unions with larger estimated minority shares tended to give Jamaat less and the
+    BNP more. The constituency average swallowed that divide.
+  </p>
+  <figure>
+    <figcaption>The pattern appears only after the seats are opened up</figcaption>
+    <div class="sub">How estimated minority share moved with each party’s vote — first between entire constituencies, then among unions inside the same seat</div>
+    <div class="legend" id="leg-cw"></div>
+    <div id="cw"></div>
+    <div class="note">Grey compares whole constituencies. Colour compares each union only with
+      other unions in the same seat, removing much of the broad regional difference. Neither
+      comparison identifies anyone’s religion or ballot.</div>
+  </figure>
+  <figure>
+    <figcaption>Inside each seat, unions pull apart</figcaption>
+    <div class="sub">Unions grouped by how far their estimated minority share sits above or below their constituency average</div>
+    <div id="cq"></div>
+    <div class="note">In the two outer groups, unions about 9 points below their seat’s
+      estimated minority share gave Jamaat 2.8 points more than the seat average; unions about
+      11 points above gave it 3.9 points less.</div>
+  </figure>
+</section></div>
+
+<!-- ================================================================ SCENE 6 · LOCAL -->
+<div class="scene scene--right" id="scene-local" role="region" aria-label="The election redrawn along local borders">
+  <div class="stage"><div class="inner">
+    <div class="stagemap" id="map4" role="group" aria-label="Map of which party or candidate group led the 2026 parliamentary vote inside local administrative boundaries"></div>
+    <div class="maplegend" id="leg4"></div>
+  </div></div>
+  <div class="steps" data-map="m4">
+    <div class="step" data-view="union"><div class="card"><span class="k">Local borders</span>
+      <b>The parliamentary map breaks into 4,539 unions.</b> Jamaat led in
+      <b id="s6-ujam">—</b> of them; the BNP in <b id="s6-ubnp">—</b>. In 751 unions, the
+      leader differed from the parent upazila. An average union has about 22,000 registered
+      voters. A parliamentary seat has roughly 420,000.</div></div>
+    <div class="step" data-view="municipality"><div class="card">
+      <b>Towns sometimes broke from the countryside around them.</b> Forty-five of 319
+      municipalities had a different leader from their parent upazila; 35 were direct
+      BNP–Jamaat reversals. In 213 towns, participation was lower than in the surrounding unions.</div></div>
+    <div class="step" data-view="cityward"><div class="card">
+      <b>Cities splintered ward by ward.</b> In 102 of 463 wards, the leading party was not the
+      party that led the city as a whole. City wards also produced the largest share of margins
+      below five points.</div></div>
+    <div class="step" data-view="upazila"><div class="card">
+      <b>Zoom out and Jamaat’s footprint narrows.</b> It finished first in
+      <b id="s6-upz">—</b> of 491 upazila-level units and two of 12 whole city corporations,
+      compared with 25.7 percent of 4,539 unions with complete results.</div></div>
+  </div>
+</div>
+
+<div class="wrap">
+<section class="prose">
+  <h2>The national vote, redrawn along local borders</h2>
+  <p class="lede">The same parliamentary returns draw a different map at union, town, ward and
+    upazila level. It is a starting point for the coming local contests, not a forecast. Local
+    candidates, alliances and turnout will change the race.</p>
+  <figure>
+    <figcaption>Where Jamaat led as the borders grew</figcaption>
+    <div class="sub">Share of local places in which Jamaat finished first in the parliamentary vote</div>
+    <div id="c9"></div>
+    <div class="note">Khelafat candidates are counted separately. The tiers overlap, so they
+      cannot be added together as separate electorates.</div>
+  </figure>
+  <figure>
+    <figcaption>Twelve cities, not twelve blocs</figcaption>
+    <div class="sub">Each city assembled from its ward returns, ordered by the margin between its two leading parties</div>
+    <div class="legend" id="leg-cities"></div>
+    <div id="c-cities"></div>
+    <div class="note"><span id="c-city-diff">—</span> of 463 wards had a different leader
+      from their citywide result. Dhaka North was separated by less than half a point,
+      while the BNP led more of its wards; Jamaat led 31 of Rangpur’s 33 wards. The bars use
+      valid votes, and turnout is valid ballots divided by registered voters.</div>
+  </figure>
+  <figure>
+    <figcaption>City wards produced the most close calls</figcaption>
+    <div class="sub">Winning margins after the parliamentary returns are redrawn inside local boundaries</div>
+    <div class="legend" id="leg-local-margins"></div>
+    <div id="c-local-margins"></div>
+    <div class="note">Ninety of 463 city-corporation wards had leading margins below five
+      percentage points, compared with 628 of 4,539 unions. With margins below ten points, the shares were
+      38.9 percent and 27.3 percent. These are the parliamentary results redrawn locally — not
+      a prediction of a local contest.</div>
+  </figure>
+</section>
+
+<section class="prose closing">
+  <div class="mini-head">What the national map cannot show</div>
+  <h2>The verdict was decisive. The country beneath it was not.</h2>
+  <p>The BNP won 209 of the 297 declared seats. That is the result of the election. It is not
+    a portrait of the electorate.</p>
+  <p>Open those seats and a more complicated country appears. Participation fell sharply in
+    the cities. Centres inside the same constituency often produced strikingly different
+    results. Women-only centres followed different patterns in villages, towns and cities. And
+    a divide involving minority-heavy unions emerged only after the seats were broken apart.</p>
+  <p>The returns cannot tell us the age, sex or faith behind a ballot. But they can show where
+    the result changes when the border changes. A national tally tells us who won power. The
+    smaller returns show the country that produced it.</p>
+</section>
+
+<footer id="method">
+<details class="methodology">
+  <summary>Methodology, sources and limitations</summary>
+  <div class="method-body">
+  <h3>Published sources</h3>
+  <p>The national seat tally follows the Election Commission gazette, as reported by
+    <a href="https://www.bssnews.net/news-flash/361065">Bangladesh Sangbad Sangstha</a>.
+    The <a href="https://ecs.gov.bd/page/election-result?lang=en">Election Commission result portal</a>
+    is the source for the released returns. The EC’s party-wise vote release and the coverage
+    of the centre-level file are documented by
+    <a href="https://www.thedailystar.net/news/national-election-2026/news/feb-12-polls-ec-publishes-party-wise-popular-vote-counts-4121711">The Daily Star</a>.
+    The description of 2026 as the first genuinely competitive parliamentary election since
+    2008 follows the <a href="https://www.eeas.europa.eu/eom-bangladesh-2026/preliminary-statement-credible-electoral-process-propels-renewal-democracy_en">EU Election Observation Mission</a>.
+    The population description uses the United Nations’
+    <a href="https://population.un.org/wpp/">World Population Prospects 2024</a>.</p>
+  <h3>Scope</h3>
+  <p id="m-scope"></p>
+  <h3>The two datasets</h3>
+  <p><b>Results.</b> The Election Commission's centre-level count: 42,382 polling centres across
+  297 constituencies. Polling in Sherpur-3 was postponed; Chattogram-2 and Chattogram-4 are
+  absent from this centre file. Vote shares use valid ballots. The story labels
+  <b>valid ballots ÷ registered voters</b> as the valid-ballot rate (58.9%); including rejected
+  ballots as participation produces 60.2%. National winner counts use the official gazette.
+  Five winner-party labels are corrected in the headline tally and constituency map; derived
+  subgroup files retain their original classification unless a correction is stated. The EC’s
+  <a href="https://www.bssnews.net/news-flash/361371">later party-wise release</a> reported
+  49.97% for the BNP and 31.76% for Jamaat; the centre file
+  used consistently for subgroup calculations produces 50.15% and 31.54%.</p>
+  <p><b>The roll.</b> The 2026 roll corpus for 292 constituencies — 199,846 PDFs and
+  125,104,801 records — was extracted
+  and decoded by this desk, including reconstruction of the nonstandard embedded font encoding in
+  the source files (99.996% of rows fully clean). Outputs are published only as aggregates at
+  union level or coarser; no row-level derivative is released.</p>
+  <h3>Joining the two</h3>
+  <p id="m-join"></p>
+  <h3>Age</h3>
+  <p id="m-age"></p>
+  <p>The roll also contains <span id="h3-n">—</span> registrations marked hijra. That figure
+  is reported as an administrative roll category; the analysis does not infer gender from names.</p>
+  <h3>Religion</h3>
+  <p>The name-token classifier was developed by hand-labelling surname cases, with given,
+  parent and spouse-name tokens used to resolve some ambiguous surnames. It operates on
+  <b>125,104,801 raw roll records, including duplicate registrations</b>; 90,154 records
+  (0.07%) were left unresolved. It estimates the roll, not identity or voting behaviour.
+  “Indigenous” is an ethnicity category, not a religion, and is therefore included only in the
+  broader “minority-community” measure. The upazila religion layer has a much higher unresolved
+  rate and is not used for claims in this version.</p>
+  <h3>Single-sex-centre comparisons and rejected ballots</h3>
+  <p>Sex-specific figures come from the 10,468 single-sex centres in the 226 constituencies
+  where they hold at least 10% of the electorate — the inclusion rule used throughout this story.
+  Rejected-ballot rates are invalid ballots over cast ballots (valid + rejected) at those
+  centres; the sex gap carries a 95% interval from resampling whole seats 1,500 times and is
+  significant overall and within each settlement type separately. The same-building analysis
+  matches exact normalized centre names within a constituency, retaining boys’ and girls’ branch
+  qualifiers. It contains 1,204 buildings and 2,813 centres. Estimates are mean per-building
+  differences; intervals resample whole constituencies. The pooled match is not reported because
+  41% of matched buildings are in city corporations, against 31% of scoped centres. Neither the
+  aggregate nor matched comparison is an individual ballot record.</p>
+  <h3>Centre and union level</h3>
+  <p>Centre-level figures use all 42,382 published results. The party histograms and variance
+  decompositions include only seats each party contested — Jamaat fielded no candidate in 72 of
+  297 seats, the BNP in 9 — because a centre in an uncontested seat records a structural zero,
+  not weak support. Including those zeroes would put Jamaat's "between-constituency" variance
+  share at 81% instead of 50% and make its support look far more regional than it is. The
+  decomposition weights each centre by valid ballots and compares the variance of constituency
+  means with the total.</p>
+  <p>Union-level figures come from re-aggregating the whole roll by the district, upazila and
+  union recorded <i>inside</i> each source PDF, then matching those Bengali names to the
+  election file's English ones within each already-validated upazila — a search space of about
+  ten candidates, scored on transliteration similarity and electorate size, with anything
+  ambiguous left unmatched. <b>4,325 of 4,539 unions matched (95.3%)</b>, size correlation
+  0.954, median roll-to-register ratio 1.01. After dropping units where the two disagree by
+  more than a factor of two, <b>4,281 unions across 267 constituencies</b> remain; 4,280 have a
+  matched geometry in the union map. Religion at this resolution uses the project's own classifier — the tie-break ladder over each voter's
+  name, father's, mother's and husband's — leaving 0.07% unresolved, the same rate as the seat
+  layer. City-corporation wards are <b>excluded</b>: a city corporation spans many thanas, so
+  the roll's blocks do not map onto it one-to-one, and the attempted match produced a size
+  correlation of 0.23, i.e. wrong pairings. Municipalities were not attempted.</p>
+  <p><b>The within-constituency estimator.</b> Each union is compared with the
+  electorate-weighted mean of all matched unions in its own constituency, including itself. This holds
+  constituency-level candidate and regional context constant; local campaigning and other union
+  characteristics can still differ. Only seats with at least four matched unions are used.
+  Confidence intervals resample whole constituencies 1,000 times.
+  This is what makes the scale comparison possible: between-seat and within-seat estimates of
+  the same quantity can disagree in size and, for age and turnout, in sign.</p>
+
+  <h3>Ecological inference — the standing caveat</h3>
+  <p>Every age and community-composition comparison is ecological. A place with a younger or
+  more minority-classified roll giving a party more support does not establish that those
+  individuals chose it. Within-seat comparisons remove constituency-level context, but remain
+  comparisons among unions. Single-sex centres directly observe ballots cast at sex-restricted
+  sites, yet they still aggregate many people and can differ by location.</p>
+  <h3>The local aggregation</h3>
+  <p>2026 national votes aggregated inside each computable local boundary: 4,539 union parishads, 491
+  upazila parishads, 319 pourashavas, 463 city-corporation wards and 12 city corporations —
+  5,824 overlapping administrative units. Another 54 union shapes have no result or no centre.
+  Khelafat candidates are counted as a separate category, matching the unit map. Tiers are displayed as
+  alternative geographies and are not independent electorates. The local-margin chart uses the
+  recorded lead between the first- and second-place candidates inside each computable unit.</p>
+  <h3>Uncertainty</h3>
+  <p>Seat-level correlations are Pearson, weighted by registered voters, over the
+  <span id="m-ecoseats">—</span> seats that survive the join guard. Intervals are cluster
+  bootstraps resampling whole constituencies — centres within a seat are not independent.
+  Results whose intervals cross zero are described as not distinguishable from zero, and are
+  drawn grey.</p>
+  <h3>Privacy</h3>
+  <p>The roll is public but personal. The smallest published roll-derived geography here is a
+  matched rural union, averaging about 22,000 registered voters. No individual-level derivative,
+  name or row is published.</p>
+  <h3>Files</h3>
+  <p><code>data.json</code> and <code>crosses.json</code> — national and cross-tab summaries ·
+  <code>seats_full.csv</code> — the per-seat table · <code>centres.json</code> and
+  <code>within.json</code> — centre- and union-scale estimates.</p>
+  </div>
+</details>
+</footer>
+</div>
+</main>
+
+<div class="tt" id="tt"></div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
+<script>
+/* ============================================================ plumbing */
+document.documentElement.classList.add('js');
+const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const tt=document.getElementById('tt');
+const show=(h,e)=>{tt.innerHTML=h;tt.style.opacity=1;move(e);};
+function move(e){const p=14;let x=e.clientX+p,y=e.clientY+p;const r=tt.getBoundingClientRect();
+  if(x+r.width>innerWidth-8)x=e.clientX-r.width-p; if(y+r.height>innerHeight-8)y=e.clientY-r.height-p;
+  tt.style.left=x+'px';tt.style.top=y+'px';}
+const hide=()=>tt.style.opacity=0;
+const NS='http://www.w3.org/2000/svg';
+const el=(n,a)=>{const x=document.createElementNS(NS,n);for(const k in a)x.setAttribute(k,a[k]);return x;};
+const cv=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const fmtM=v=>(v/1e6).toFixed(1)+'M';
+const pct=v=>v.toFixed(1)+'%';
+const sgn=v=>(Math.abs(v)<0.05?'0.0':(v>0?'+':'')+v.toFixed(1));
+const hov=(node,html)=>{node.style.cursor='pointer';
+  const plain=html.replace(/<br\s*\/?>/gi,' · ').replace(/<[^>]+>/g,'').replace(/\s+/g,' ').trim();
+  const title=el('title',{}); title.textContent=plain; node.appendChild(title);
+  node.addEventListener('mousemove',e=>show(html,e));
+  node.addEventListener('mouseleave',hide);return node;};
+const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+const PARTY=()=>({BNP:cv('--bnp'),Jamaat:cv('--jam'),NCP:cv('--ncp'),IAB:cv('--iab'),
+  KM:cv('--km'),BKM:cv('--km'),Independent:cv('--oth'),Other:cv('--flat')});
+/* Orange, ochre and the greys are fill colours: as 11px type on white they fall
+   below 4.5:1, so each has a darkened twin that type uses instead. */
+const inkOf=c=>({[cv('--jam')]:cv('--jam-ink'),[cv('--bnp')]:cv('--bnp-ink'),
+  [cv('--km')]:cv('--km-ink'),[cv('--oth')]:cv('--ink2s'),
+  [cv('--flat')]:cv('--muted')})[c]||c;
+let D=null,X=null,CE=null,WI=null,UL=null,SEATGJ=null,UNITGJ=null;
+
+/* The analytical export predates five corrected winner-party labels in the EC gazette.
+   Apply the official tally to headline/seat-map displays without rewriting source files. */
+const OFFICIAL_PARTY_SEATS={BNP:209,Jamaat:68,Independent:7,NCP:6,BKM:2,KM:1,IAB:1,GOP:1,BJP:1,Ganasamhati:1};
+const OFFICIAL_COAL_SEATS={'BNP-led Coalition':212,'Jamaat-led Coalition':77,Independent:7,'IAB-led Coalition':1};
+const WINNER_FIXES={
+  65:{w:'Jamaat',wp:49.49,jam:49.49,bnp:49.25},
+  151:{w:'Jamaat',wp:45.02,jam:45.02},
+  216:{w:'BNP',wp:50.33,bnp:50.33},
+  218:{w:'BKM',wp:36.30},
+  219:{w:'BNP',wp:37.83,bnp:37.83},
+};
+function applyOfficialResult(){
+  D.national.party_seats={...OFFICIAL_PARTY_SEATS};
+  D.national.coal_seats={...OFFICIAL_COAL_SEATS};
+  Object.entries(WINNER_FIXES).forEach(([cid,fix])=>{if(D.seatmap[cid])Object.assign(D.seatmap[cid],fix);});
+  const gopal=D.religion?.top_seats?.find(s=>s.n==='Gopalganj-2');
+  if(gopal){gopal.winner='BNP';gopal.winner_pct=50.33;}
+}
+
+/* ============================================================ colour ramps */
+function ramp(v,stops){ if(v==null||isNaN(v))return null;
+  for(let i=1;i<stops.length;i++){ if(v<=stops[i].v){
+    const a=stops[i-1],b=stops[i],t=(v-a.v)/(b.v-a.v||1);
+    return `rgb(${a.c.map((c,k)=>Math.round(c+t*(b.c[k]-c))).join(',')})`; }}
+  return `rgb(${stops[stops.length-1].c.join(',')})`; }
+/* Sequential scales run pale-to-dark inside one hue. AQUA (the roll's under-35
+   share) is the only one that is not a party hue: it stays green so it can never
+   be read as a BNP teal. */
+const AQUA=[{v:0,c:[237,243,233]},{v:50,c:[74,133,74]},{v:100,c:[24,58,32]}];
+const VIOLET=[{v:0,c:[241,237,246]},{v:30,c:[123,94,167]},{v:70,c:[47,30,77]}];
+const BLUE=[{v:30,c:[240,244,244]},{v:45,c:[166,197,198]},{v:58,c:[54,123,127]},{v:75,c:[27,66,69]}];
+/* BNP lead minus Jamaat lead: deep orange <- neutral grey -> deep teal */
+const DIVBJ=[{v:-40,c:[166,79,9]},{v:-18,c:[242,129,36]},{v:-4,c:[249,199,158]},
+             {v:0,c:[235,235,235]},
+             {v:4,c:[166,197,198]},{v:18,c:[54,123,127]},{v:40,c:[30,76,79]}];
+/* deviation ramps for the union map: grey midpoint, two hues */
+const DIVNM=[{v:-20,c:[168,118,31]},{v:-3,c:[234,224,201]},{v:0,c:[235,235,235]},
+             {v:3,c:[190,173,213]},{v:20,c:[74,50,120]}];
+const DIVJAM=[{v:-10,c:[30,76,79]},{v:-1.5,c:[166,197,198]},{v:0,c:[235,235,235]},
+              {v:1.5,c:[249,199,158]},{v:10,c:[166,79,9]}];
+
+/* ============================================================ maps */
+const TILES='https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png';
+/* The story is set on white only, so the basemap sits well back and the
+   choropleth carries all of the colour. */
+const MAPS={};
+function mkMap(id,key){ const m=L.map(id,{scrollWheelZoom:false,dragging:false,touchZoom:false,
+  doubleClickZoom:false,boxZoom:false,keyboard:false,attributionControl:true,zoomControl:false});
+  m._tiles=L.tileLayer(TILES,{maxZoom:11,opacity:.62,
+    attribution:'&copy; OpenStreetMap contributors &copy; CARTO'}).addTo(m);
+  m.setView([23.6,90.3],7); m._hbv=key; MAPS[key]={map:m};
+  requestAnimationFrame(()=>{ try{ m.invalidateSize(); }catch(e){} });
+  return m; }
+/* fitBounds until the map has a measured size; animated fly only after */
+function fly(m,b){ try{
+    const sz=m.getSize();
+    if(!m._hbvReady||!sz.x||!sz.y){ m.fitBounds(b); m._hbvReady=true; }
+    else if(reducedMotion)m.fitBounds(b); else m.flyToBounds(b,{duration:.8});
+  }catch(e){ try{ m.fitBounds(b); }catch(_){} } }
+function legendSwatches(elid,title,items){
+  const e=document.getElementById(elid); if(!e)return; e.innerHTML=`<b>${title}</b>`;
+  items.forEach(it=>{const d=document.createElement('div');d.className='r';
+    d.innerHTML=`<span class="b" style="background:${it[0]}"></span>${it[1]}`;e.appendChild(d);});}
+
+const KH_VIEW=[[22.4,88.9],[23.8,90.0]];   /* belt bounds */
+const BELT_VIEW=[[21.8,89.1],[24.2,90.7]]; /* Khulna division, for the union views */
+const CHT_VIEW=[[21.6,91.7],[23.8,92.8]];
+function seatStyle(mode){
+  const P=PARTY();
+  return f=>{
+    const sm=D.seatmap[f.properties.cid]||{};
+    let fill=cv('--flat'),op=.88,w=.7,color='#ffffff';
+    if(mode==='winner') fill=P[sm.w]||cv('--flat');
+    else if(mode==='jamonly'){ fill=sm.w==='Jamaat'?cv('--jam'):cv('--surface2'); op=sm.w==='Jamaat'?.95:1; }
+    else if(mode==='margin'){ const c=(sm.bnp>0&&sm.jam>0)?ramp(sm.bnp-sm.jam,DIVBJ):null;
+      fill=c||cv('--surface2'); }
+    else if(mode==='to'){ const c=ramp(sm.to,BLUE); fill=c||cv('--surface2'); }
+    else if(mode==='u35'||mode==='oldbelt'){ const c=ramp(sm.u35!=null?(sm.u35-25)*100/20:null,AQUA);
+      fill=c||cv('--surface2'); op=c?.9:1;
+      if(mode==='oldbelt'&&sm.u35!=null&&sm.u35<=D._u35q1){ color=cv('--jam'); w=2.2; } }
+    else if(mode==='nm'||mode==='nmwin'||mode==='cht'){ const c=ramp(sm.nm,VIOLET);
+      fill=c||cv('--surface2'); op=c?.9:1;
+      if(mode!=='nm'&&sm.w==='Jamaat'){ color=cv('--jam'); w=2.2; } }
+    return {fillColor:fill,fillOpacity:op,color,weight:w};
+  };
+}
+function seatLayer(key,mode){
+  const M=MAPS[key]; if(M.layer)M.layer.remove();
+  M.layer=L.geoJSON(SEATGJ,{style:seatStyle(mode),
+    onEachFeature:(f,l)=>{const p=f.properties,sm=D.seatmap[p.cid]||{};
+      l.bindTooltip(`<b>${p.n}</b><br>won by ${sm.w||'—'} (${sm.wp!=null?sm.wp.toFixed(1)+'%':'—'}) · turnout ${sm.to!=null?sm.to.toFixed(1)+'%':'—'}`+
+        (sm.u35!=null?`<br>${sm.u35.toFixed(1)}% of roll under 35 · median age ${sm.ma.toFixed(0)}`:'<br>roll data unavailable')+
+        (sm.nm!=null?`<br>${sm.nm.toFixed(1)}% estimated minority-community share`:''),{sticky:true});}}).addTo(M.map);
+}
+/* union-level choropleth shaded by deviation from the unit's own constituency */
+function unionLayer(key,mode){
+  const M=MAPS[key]; if(!UNITGJ||!UL)return; if(M.layer)M.layer.remove();
+  const feats={type:'FeatureCollection',
+    features:UNITGJ.features.filter(f=>UL[f.properties.k])};
+  M.layer=L.geoJSON(feats,{style:f=>{
+      const u=UL[f.properties.k];
+      const v=mode==='unit'?u.dnm:u.djam;
+      const c=v==null?null:ramp(v,mode==='unit'?DIVNM:DIVJAM);
+      return {fillColor:c||cv('--surface2'),fillOpacity:c?.92:.4,
+              color:'#ffffff',weight:.25};},
+    onEachFeature:(f,l)=>{const u=UL[f.properties.k],p=f.properties;
+      l.bindTooltip(`<b>${u.n}</b> · ${p.z||''}, ${p.d||''}`+
+        `<br>estimated minority-community share ${u.nm==null?'—':u.nm+'%'} `+
+        `(${u.dnm==null?'—':(u.dnm>0?'+':'')+u.dnm} vs its seat)`+
+        `<br>Jamaat ${u.jam==null?'—':u.jam+'%'} `+
+        `(${u.djam==null?'—':(u.djam>0?'+':'')+u.djam} vs its seat)`+
+        `<br>BNP ${u.bnp==null?'—':u.bnp+'%'} · turnout ${u.to==null?'—':u.to+'%'}`,
+        {sticky:true});}}).addTo(M.map);
+}
+function unitLayer(key,mode){
+  const M=MAPS[key],P=PARTY(),type={union:'u',municipality:'m',cityward:'cc'}[mode];
+  const source=mode==='upazila'?M.uz:UNITGJ;if(!source)return;
+  const gj=type?{type:'FeatureCollection',features:source.features.filter(f=>f.properties.t===type)}:source;
+  if(M.layer)M.layer.remove();
+  M.layer=L.geoJSON(gj,{style:f=>{const w=f.properties.w,noData=w==='NoResult'||w==='NoCentres';
+      return {fillColor:noData?cv('--surface2'):(P[w]||cv('--flat')),fillOpacity:noData?1:.88,
+        color:noData?cv('--line'):'#ffffff',weight:.4};},
+    onEachFeature:(f,l)=>{const p=f.properties;
+      l.bindTooltip(`<b>${p.n}</b>${p.z&&p.z!==p.n?' · '+p.z:''}${p.d?' · '+p.d:''}`+
+        `<br>leads: ${p.w} · margin ${p.mg!=null?p.mg+' pts':'—'} · turnout ${p.to!=null?p.to+'%':'—'}`,{sticky:true});}}).addTo(M.map);
+}
+/* map scene state machines */
+const MAPVIEW={
+  m1(view){ seatLayer('m1',view);
+    const P=PARTY();
+    if(view==='winner'||view==='jamonly') legendSwatches('leg1','Winner of the seat',
+      [[P.BNP,'BNP'],[P.Jamaat,'Jamaat'],[P.NCP,'NCP'],[P.KM,'Khelafat parties'],[P.Independent,'Independent'],[cv('--flat'),'Other']]);
+    else if(view==='margin') legendSwatches('leg1','Lead, BNP minus Jamaat',
+      [[ramp(-25,DIVBJ),'Jamaat +25'],[ramp(0,DIVBJ),'even'],[ramp(25,DIVBJ),'BNP +25'],[cv('--surface2'),'one party absent']]);
+    else legendSwatches('leg1','Valid ballots ÷ registered',[[ramp(35,BLUE),'35%'],[ramp(55,BLUE),'55%'],[ramp(75,BLUE),'75%']]);
+    fly(MAPS.m1.map,[[20.7,88.0],[26.7,92.7]]); },
+  m2(view){ seatLayer('m2',view);
+    legendSwatches('leg2','Share of the roll under 35',
+      [[ramp(0,AQUA),'25%'],[ramp(50,AQUA),'35%'],[ramp(100,AQUA),'45%'],[cv('--surface2'),'no roll data']]);
+    if(view==='oldbelt') document.querySelector('#leg2').insertAdjacentHTML('beforeend',
+      `<div class="r"><span class="b" style="background:transparent;border:2px solid ${cv('--jam')}"></span>oldest quarter of seats</div>`);
+    fly(MAPS.m2.map,[[20.7,88.0],[26.7,92.7]]); },
+  m3(view){
+    if(view==='unit'||view==='unitjam'){ unionLayer('m3',view);
+      if(view==='unit') legendSwatches('leg3','Estimated community share vs own seat',
+        [[ramp(-15,DIVNM),'15 pts below'],[ramp(0,DIVNM),'same'],[ramp(15,DIVNM),'15 pts above'],
+         [cv('--surface2'),'no roll data']]);
+      else legendSwatches('leg3','Jamaat vote vs its OWN constituency',
+        [[ramp(-8,DIVJAM),'8 pts below'],[ramp(0,DIVJAM),'same'],[ramp(8,DIVJAM),'8 pts above'],
+         [cv('--surface2'),'no roll data']]);
+      /* unions are only legible zoomed in; the belt is where the effect is strongest,
+         and holding the same frame across both views makes the inversion visible */
+      fly(MAPS.m3.map,BELT_VIEW); return; }
+    seatLayer('m3',view);
+    legendSwatches('leg3','Estimated minority-community share',
+      [[ramp(2,VIOLET),'2%'],[ramp(15,VIOLET),'15%'],[ramp(40,VIOLET),'40%'],[ramp(65,VIOLET),'65%'],[cv('--surface2'),'no data']]);
+    if(view!=='nm') document.querySelector('#leg3').insertAdjacentHTML('beforeend',
+      `<div class="r"><span class="b" style="background:transparent;border:2px solid ${cv('--jam')}"></span>seat won by Jamaat</div>`);
+    if(view==='cht') fly(MAPS.m3.map,CHT_VIEW);
+    else fly(MAPS.m3.map,[[20.7,88.0],[26.7,92.7]]); },
+  m4(view){ unitLayer('m4',view);
+    const title={union:'Union leader',municipality:'Municipality leader',cityward:'City-ward leader',upazila:'Upazila leader'}[view]||'Local unit leader';
+    legendSwatches('leg4',title+' (2026 parliamentary vote)',
+      [[cv('--bnp'),'BNP'],[cv('--jam'),'Jamaat'],[cv('--km'),'Khelafat parties'],
+       [cv('--iab'),'Islami Andolan'],[cv('--oth'),'Independent'],[cv('--flat'),'Other'],
+       [cv('--surface2'),'No result / no centres']]);
+    fly(MAPS.m4.map,[[20.7,88.0],[26.7,92.7]]); },
+};
+
+/* ============================================================ stage charts */
+function stageBars(elid,title,sub,rows,max,unit){
+  /* rows: [{label, series:[{name,v,color,faded?}]}] */
+  set(elid==='sc2'?'st2-t':'st4-t',title); set(elid==='sc2'?'st2-s':'st4-s',sub);
+  const h=document.getElementById(elid);h.innerHTML='';
+  const compact=innerWidth<700,W=compact?430:980,rowH=Math.min(compact?96:120,(compact?390:560)/rows.length),
+    mL=compact?108:170,mR=compact?62:90,mT=14,mB=34;
+  const H=mT+mB+rows.length*rowH;
+  const s=el('svg',{viewBox:`0 0 ${W} ${H}`}),pw=W-mL-mR,x=v=>mL+Math.max(v,0)/max*pw;
+  for(let g=0;g<=max;g+=max>20?10:2){s.appendChild(el('line',{x1:x(g),x2:x(g),y1:mT,y2:H-mB,class:'gl'}));
+    s.appendChild(el('text',{x:x(g),y:H-mB+17,'text-anchor':'middle',class:'ax'})).textContent=g+(unit||'%');}
+  rows.forEach((r,i)=>{
+    const cy=mT+i*rowH, n=r.series.length, bh=Math.min(26,(rowH-24)/n);
+    s.appendChild(el('text',{x:mL-14,y:cy+rowH/2+4,'text-anchor':'end',class:'cat',
+      style:`font-size:${compact?14:16}px;font-weight:700`})).textContent=r.label;
+    r.series.forEach((sr,j)=>{
+      const by=cy+(rowH-n*bh-(n-1)*3)/2+j*(bh+3);
+      hov(s.appendChild(el('rect',{x:mL,y:by,width:Math.max(x(sr.v)-mL,1.5),height:bh,
+        fill:sr.color,opacity:sr.faded?.4:1})),`<b>${r.label} — ${sr.name}</b><br>${sr.v.toFixed(1)}${unit||'%'}`);
+      s.appendChild(el('text',{x:x(sr.v)+7,y:by+bh/2+4,class:'val',style:`font-size:${compact?13:14}px`}))
+        .textContent=sr.name+' '+sr.v.toFixed(1)+(unit||'%');
+    });
+  });
+  h.appendChild(s);
+}
+function stageDiverging(elid,title,sub,rows,lo=-1.5,hi=3){
+  set(elid==='sc2'?'st2-t':'st4-t',title); set(elid==='sc2'?'st2-s':'st4-s',sub);
+  const h=document.getElementById(elid);h.innerHTML='';
+  const compact=innerWidth<700,W=compact?430:980,rowH=compact?92:108,mL=compact?108:170,
+    mR=compact?58:100,mT=24,mB=36,H=mT+mB+rows.length*rowH,pw=W-mL-mR,
+    x=v=>mL+(v-lo)/(hi-lo)*pw;
+  const s=el('svg',{viewBox:`0 0 ${W} ${H}`});
+  for(let g=Math.ceil(lo);g<=Math.floor(hi);g++){
+    s.appendChild(el('line',{x1:x(g),x2:x(g),y1:mT-8,y2:H-mB,class:'gl'}));
+    s.appendChild(el('text',{x:x(g),y:H-mB+17,'text-anchor':'middle',class:'ax'})).textContent=(g>0?'+':'')+g;
+  }
+  s.appendChild(el('line',{x1:x(0),x2:x(0),y1:mT-12,y2:H-mB,stroke:cv('--ink'),'stroke-width':1.5}));
+  rows.forEach((r,i)=>{
+    const cy=mT+i*rowH+rowH/2,v=r.v,col=r.sig?(v>=0?cv('--jam'):cv('--bnp')):cv('--flat');
+    s.appendChild(el('text',{x:mL-12,y:cy+4,'text-anchor':'end',class:'cat',style:`font-size:${compact?14:16}px;font-weight:700`})).textContent=r.label;
+    hov(s.appendChild(el('line',{x1:x(Math.min(0,v)),x2:x(Math.max(0,v)),y1:cy,y2:cy,stroke:col,'stroke-width':18,'stroke-linecap':'butt'})),
+      `<b>${r.label}</b><br>${v>0?'+':''}${v.toFixed(2)} points<br>uncertainty range ${r.lo.toFixed(2)} to ${r.hi.toFixed(2)}`);
+    s.appendChild(el('text',{x:v<0?x(v)-8:x(v)+8,y:cy+4,'text-anchor':v<0?'end':'start',class:'val',style:`font-size:${compact?13:14}px`}))
+      .textContent=(v>0?'+':'')+v.toFixed(2)+(r.sig?'':' ns');
+  });
+  h.appendChild(s);
+}
+const CHARTVIEW={
+  s2(view){
+    const S=D.settlement,T=[['union','Villages'],['municipality','Small towns'],['city_corporation','Big cities']];
+    if(view==='share') stageBars('sc2','How each kind of place voted','Coalition share of valid votes',
+      T.map(t=>({label:t[1],series:[
+        {name:'BNP-led',v:S[t[0]].coalition['BNP-led Coalition'],color:cv('--bnp')},
+        {name:'Jamaat-led',v:S[t[0]].coalition['Jamaat-led Coalition'],color:cv('--jam')}]})),60);
+    else if(view==='turnout') stageBars('sc2','Valid-ballot rate by place','Valid votes as a share of registered voters',
+      T.map(t=>({label:t[1],series:[{name:'turnout',v:S[t[0]].turnout,color:cv('--bnp')}]})),70);
+    else if(view==='sexto') stageBars('sc2','Turnout, split by sex','Measured directly at single-sex centres',
+      T.map(t=>({label:t[1],series:[
+        {name:'men',v:X.turnout_sex[t[0]].m,color:cv('--men')},
+        {name:'women',v:X.turnout_sex[t[0]].f,color:cv('--women')}]})),70);
+    else stageBars('sc2','The age profile of city rolls','Share of roll entries under 35',
+      [{label:'Big-city seats',series:[{name:'under 35',v:D.age.city_rolls.city.u35,color:cv('--ncp')}]},
+       {label:'Rural seats',series:[{name:'under 35',v:D.age.city_rolls.rural.u35,color:cv('--ncp')}]}],45);
+  },
+  s4(view){
+    const W4=D.women,G=X.women;
+    if(view==='gap') stageBars('sc4','Vote shares at single-sex centres','All qualifying centres across 226 constituencies',
+      [{label:'Jamaat',series:[{name:'men',v:W4.headline.jamaat.m,color:cv('--men')},
+                              {name:'women',v:W4.headline.jamaat.f,color:cv('--women')}]},
+       {label:'BNP',series:[{name:'men',v:W4.headline.bnp.m,color:cv('--men')},
+                            {name:'women',v:W4.headline.bnp.f,color:cv('--women')}]}],60);
+    else if(view==='paired') stageDiverging('sc4','The women-side margin, at the same building',
+      'Change in Jamaat’s lead over the BNP, percentage points · uncertainty range',
+      W4.paired.by_geo.map(g=>({label:g.t==='union'?'Villages':g.t==='municipality'?'Small towns':'Big cities',
+        v:g.margin.mean,lo:g.margin.lo,hi:g.margin.hi,sig:g.margin.sig})),-4.5,5);
+    else stageBars('sc4','Rejected ballots, by sex','Share of cast ballots ruled invalid · single-sex centres',
+      [{label:'Women’s centres',series:[{name:'invalid',v:X.rejected.national.f,color:cv('--women')}]},
+       {label:'Men’s centres',series:[{name:'invalid',v:X.rejected.national.m,color:cv('--men')}]}],3,'%');
+  },
+};
+
+/* ============================================================ scrolly driver */
+function initScrolly(){
+  document.documentElement.classList.add('scrolly-ready');
+  const groups=[...document.querySelectorAll('.scene .steps')].map(steps=>({
+    steps,mapKey:steps.dataset.map,chartKey:steps.dataset.chart,
+    items:[...steps.querySelectorAll('.step')],active:-1,
+  }));
+  groups.forEach(g=>g.items[0]?.classList.add('is-active'));
+  const nav=document.getElementById('story-nav'),progress=document.getElementById('reading-progress'),
+    chapterLabel=document.getElementById('story-chapter'),story=document.getElementById('story');
+  const chapters=[
+    ['scene-result','The result'],['below-seat','Polling centres'],['scene-places','Participation'],
+    ['scene-age','Age'],['scene-women','Women-only centres'],['scene-faith','Communities'],
+    ['scene-local','Local borders'],
+  ];
+  let raf=0;
+  const update=()=>{
+    raf=0; const line=innerHeight*.52;
+    groups.forEach(g=>{
+      const scene=g.steps.closest('.scene'),sr=scene.getBoundingClientRect();
+      if(sr.bottom<0||sr.top>innerHeight)return;
+      let best=0,dist=Infinity;
+      g.items.forEach((item,i)=>{const r=item.getBoundingClientRect(),d=Math.abs((r.top+r.height*.5)-line);
+        if(d<dist){dist=d;best=i;}});
+      if(best!==g.active){
+        g.active=best; g.items.forEach((item,i)=>item.classList.toggle('is-active',i===best));
+        const v=g.items[best].dataset.view;
+        if(g.mapKey&&MAPVIEW[g.mapKey])MAPVIEW[g.mapKey](v);
+        if(g.chartKey&&CHARTVIEW[g.chartKey])CHARTVIEW[g.chartKey](v);
+      }
+    });
+    const start=story.offsetTop,end=start+story.offsetHeight-innerHeight,
+      p=Math.max(0,Math.min(1,(scrollY-start)/Math.max(end-start,1)));
+    progress.style.width=(p*100).toFixed(2)+'%';
+    nav.classList.toggle('is-visible',scrollY>innerHeight*.62&&scrollY<end+innerHeight*.95);
+    let current=chapters[0];
+    chapters.forEach(c=>{const node=document.getElementById(c[0]);if(node&&node.getBoundingClientRect().top<=100)current=c;});
+    chapterLabel.textContent=current[1];
+    document.querySelectorAll('[data-nav]').forEach(a=>{
+      const on=a.dataset.nav===current[0]; a.classList.toggle('is-current',on);
+      if(on)a.setAttribute('aria-current','location');else a.removeAttribute('aria-current');
+    });
+  };
+  const requestUpdate=()=>{if(!raf)raf=requestAnimationFrame(update);};
+  addEventListener('scroll',requestUpdate,{passive:true});
+  addEventListener('resize',requestUpdate,{passive:true});
+  update();
+}
+
+/* ============================================================ deep-dive charts */
+function c1(){ const h=document.getElementById('c1');h.innerHTML='';
+  const cs=D.national.coal_share, seats=D.national.coal_seats, tot=D.national.seats_declared;
+  const rows=[['BNP-led','BNP-led Coalition',cv('--bnp')],['Jamaat-led','Jamaat-led Coalition',cv('--jam')],
+              ['Islami Andolan','IAB-led Coalition',cv('--iab')],['Independents','Independent',cv('--oth')]];
+  const W=880,rowH=64,mL=130,mR=60,mT=30,mB=34,H=mT+mB+rows.length*rowH,axisMax=80;
+  const s=el('svg',{viewBox:`0 0 ${W} ${H}`}),pw=W-mL-mR,x=v=>mL+v/axisMax*pw;
+  for(let g=0;g<=axisMax;g+=10){s.appendChild(el('line',{x1:x(g),x2:x(g),y1:mT-4,y2:H-mB,class:'gl'}));
+    s.appendChild(el('text',{x:x(g),y:H-mB+17,'text-anchor':'middle',class:'ax'})).textContent=g+'%';}
+  rows.forEach((r,i)=>{
+    const vs=cs[r[1]]||0, ss=100*(seats[r[1]]||0)/tot, cy=mT+i*rowH;
+    s.appendChild(el('text',{x:mL-14,y:cy+22,'text-anchor':'end',class:'cat',
+      style:'font-size:13px;font-weight:700'})).textContent=r[0];
+    hov(s.appendChild(el('rect',{x:mL,y:cy+4,width:Math.max(x(vs)-mL,1),height:14,fill:r[2],opacity:.45})),
+      `<b>${r[0]}</b><br>${vs.toFixed(1)}% of the vote`);
+    hov(s.appendChild(el('rect',{x:mL,y:cy+22,width:Math.max(x(ss)-mL,1),height:14,fill:r[2]})),
+      `<b>${r[0]}</b><br>${(seats[r[1]]||0)} of ${tot} seats (${ss.toFixed(1)}%)`);
+    s.appendChild(el('text',{x:x(vs)+7,y:cy+15,class:'val',style:'font-size:11px'})).textContent=vs.toFixed(1)+'% votes';
+    s.appendChild(el('text',{x:x(ss)+7,y:cy+33,class:'val',style:'font-size:11px'})).textContent=(seats[r[1]]||0)+' seats';
+  });
+  h.appendChild(s);
+}
+function c2(){ const lg=document.getElementById('leg-c2'); lg.innerHTML='';
+  [['BNP-led',cv('--bnp')],['Jamaat-led',cv('--jam')],['Men',cv('--men')],['Women',cv('--women')]]
+   .forEach(p=>{const d=document.createElement('div');d.className='i';
+     d.innerHTML=`<span class="sw" style="background:${p[1]}"></span>${p[0]}`;lg.appendChild(d);});
+  const h=document.getElementById('c2');h.innerHTML='';
+  const T=[['union','Villages'],['municipality','Small towns'],['city_corporation','Big cities']];
+  const W=880,H=360,mL=48,mR=16,mT=18,mB=76,max=70;
+  const s=el('svg',{viewBox:`0 0 ${W} ${H}`}),pw=W-mL-mR,ph=H-mT-mB,y=v=>mT+ph-v/max*ph;
+  for(let g=0;g<=70;g+=10){s.appendChild(el('line',{x1:mL,x2:W-mR,y1:y(g),y2:y(g),class:'gl'}));
+    s.appendChild(el('text',{x:mL-8,y:y(g)+4,'text-anchor':'end',class:'ax'})).textContent=g+'%';}
+  T.forEach((t,i)=>{
+    const d=D.settlement[t[0]],ts=X.turnout_sex[t[0]],gw=pw/3,cx=mL+gw*i+gw/2,bw=34,gap=7;
+    const series=[['BNP-led',d.coalition['BNP-led Coalition'],cv('--bnp')],
+                  ['Jamaat-led',d.coalition['Jamaat-led Coalition'],cv('--jam')],
+                  ['Men turn out',ts.m,cv('--men')],['Women turn out',ts.f,cv('--women')]];
+    series.forEach((sr,j)=>{
+      const bx=cx-(bw*4+gap*3)/2+j*(bw+gap);
+      hov(s.appendChild(el('rect',{x:bx,y:y(sr[1]),width:bw,height:ph-(y(sr[1])-mT),fill:sr[2]})),
+        `<b>${t[1]} — ${sr[0]}</b><br>${sr[1].toFixed(1)}%`);
+      s.appendChild(el('text',{x:bx+bw/2,y:y(sr[1])-6,'text-anchor':'middle',class:'val',
+        style:'font-size:10px'})).textContent=sr[1].toFixed(0);
+    });
+    s.appendChild(el('text',{x:cx,y:H-mB+22,'text-anchor':'middle',class:'cat',
+      style:'font-size:13.5px;font-weight:700'})).textContent=t[1];
+    const totE=D.settlement.union.electorate+D.settlement.municipality.electorate+D.settlement.city_corporation.electorate;
+    s.appendChild(el('text',{x:cx,y:H-mB+40,'text-anchor':'middle',class:'ax'}))
+      .textContent=(100*d.electorate/totE).toFixed(0)+'% of the electorate';
+  });
+  s.appendChild(el('line',{x1:mL,x2:W-mR,y1:y(0),y2:y(0),class:'base'}));
+  h.appendChild(s);
+}
+function c4(){ const h=document.getElementById('c4');h.innerHTML='';
+  const b=D.age.national.bands, order=['18-24','25-34','35-44','45-54','55-64','65+'];
+  const keys={'18-24':'age_18_24','25-34':'age_25_34','35-44':'age_35_44',
+              '45-54':'age_45_54','55-64':'age_55_64','65+':'age_65p'};
+  const tot=order.reduce((s,k)=>s+b[keys[k]],0);
+  const W=880,H=300,mL=48,mR=16,mT=26,mB=44;
+  const s=el('svg',{viewBox:`0 0 ${W} ${H}`}),pw=W-mL-mR,ph=H-mT-mB;
+  const max=Math.max(...order.map(k=>100*b[keys[k]]/tot))*1.15,y=v=>mT+ph-v/max*ph;
+  const bw=pw/order.length;
+  order.forEach((k,i)=>{
+    const v=100*b[keys[k]]/tot, first=(k==='18-24'||k==='25-34');
+    const bx=mL+i*bw+10,w=bw-20;
+    hov(s.appendChild(el('rect',{x:bx,y:y(v),width:w,height:ph-(y(v)-mT),
+      fill:first?cv('--youth'):cv('--flat')})),
+      `<b>Age ${k}</b><br>${(b[keys[k]]/1e6).toFixed(1)}M voters (${v.toFixed(1)}%)`+
+      (first?'<br><span style="opacity:.85">too young to vote in December 2008</span>':''));
+    s.appendChild(el('text',{x:bx+w/2,y:y(v)-8,'text-anchor':'middle',class:'val'})).textContent=v.toFixed(1)+'%';
+    s.appendChild(el('text',{x:bx+w/2,y:H-mB+20,'text-anchor':'middle',class:'cat'})).textContent=k;
+  });
+  s.appendChild(el('line',{x1:mL,x2:W-mR,y1:y(0),y2:y(0),class:'base'}));
+  h.appendChild(s);
+  document.getElementById('a-bandnote').textContent=
+    'The two youngest bands — 18–24 and 25–34 — are entries too young to vote in December 2008. The full born-1991-or-later measure also includes some 35-year-olds. '+
+    `${D.age.national.implausible.toLocaleString()} implausible recorded birth dates (mostly pre-1900) are excluded.`;
+}
+function qchart(elid,rows,labelFn,series){ /* shared quartile bars */
+  const h=document.getElementById(elid);h.innerHTML='';
+  const W=880,rowH=66,mL=150,mR=60,mT=26,mB=34,H=mT+mB+rows.length*rowH;
+  const s=el('svg',{viewBox:`0 0 ${W} ${H}`}),pw=W-mL-mR,x=v=>mL+v/70*pw;
+  for(let g=0;g<=70;g+=10){s.appendChild(el('line',{x1:x(g),x2:x(g),y1:mT-6,y2:H-mB,class:'gl'}));
+    s.appendChild(el('text',{x:x(g),y:H-mB+17,'text-anchor':'middle',class:'ax'})).textContent=g+'%';}
+  rows.forEach((r,i)=>{
+    const cy=mT+i*rowH, lab=labelFn(r);
+    s.appendChild(el('text',{x:mL-14,y:cy+14,'text-anchor':'end',class:'cat',
+      style:'font-size:12.5px;font-weight:700'})).textContent=lab[0];
+    s.appendChild(el('text',{x:mL-14,y:cy+30,'text-anchor':'end',class:'ax'})).textContent=lab[1];
+    series.forEach((sr,j)=>{
+      const v=r[sr[0]], by=cy+j*14;
+      hov(s.appendChild(el('rect',{x:mL,y:by,width:Math.max(x(v)-mL,1),height:11,fill:sr[2]})),
+        `<b>${lab[0]} — ${sr[1]}</b><br>${v.toFixed(1)}%`);
+      s.appendChild(el('text',{x:x(v)+6,y:by+9,class:'val',style:'font-size:10px'}))
+        .textContent=sr[1]+' '+v.toFixed(1);
+    });
+  });
+  h.appendChild(s);
+}
+const c5=()=>qchart('c5',D.age.quartiles,
+  r=>[r.q.replace('Q1 oldest','Oldest quarter').replace('Q4 youngest','Youngest quarter'),
+      r.u35.toFixed(0)+'% under 35'],
+  [['bnp','BNP',cv('--bnp')],['jam','Jamaat',cv('--jam')],['turnout','Turnout',cv('--flat')]]);
+const c7=()=>qchart('c7',D.religion.quartiles,
+  r=>[r.q.replace('Q1 fewest','Fewest minorities').replace('Q4 most','Most minorities'),
+      r.nm.toFixed(0)+'% estimated minority-community'],
+  [['bnp','BNP',cv('--bnp')],['jam','Jamaat',cv('--jam')],['turnout','Turnout',cv('--flat')]]);
+function c8(){ const h=document.getElementById('c8');h.innerHTML='';
+  const rows=D.religion.top_seats;
+  const W=880,rowH=30,mL=150,mR=120,mT=10,mB=32,H=mT+mB+rows.length*rowH;
+  const s=el('svg',{viewBox:`0 0 ${W} ${H}`}),pw=W-mL-mR,x=v=>mL+v/90*pw,P=PARTY();
+  for(let g=0;g<=90;g+=15){s.appendChild(el('line',{x1:x(g),x2:x(g),y1:mT,y2:H-mB,class:'gl'}));
+    s.appendChild(el('text',{x:x(g),y:H-mB+16,'text-anchor':'middle',class:'ax'})).textContent=g+'%';}
+  rows.forEach((r,i)=>{
+    const cy=mT+rowH*i+rowH/2;
+    s.appendChild(el('text',{x:mL-12,y:cy+4,'text-anchor':'end',class:'cat',
+      style:'font-size:12px'})).textContent=r.n;
+    s.appendChild(el('line',{x1:x(0),x2:x(r.nm),y1:cy,y2:cy,stroke:cv('--iab'),'stroke-width':2.5,
+      opacity:.35,'stroke-linecap':'round'}));
+    hov(s.appendChild(el('circle',{cx:x(r.nm),cy:cy,r:6,fill:cv('--iab'),stroke:cv('--surface'),'stroke-width':2})),
+      `<b>${r.n}</b><br>${r.nm}% estimated minority-community share (${r.hindu}% Hindu-classified)<br>won by ${r.winner} with ${r.winner_pct}%<br>valid-ballot rate ${r.turnout}%`);
+    s.appendChild(el('text',{x:W-mR+14,y:cy+4,class:'ax',
+      style:`font-size:11px;fill:${inkOf(P[r.winner])||cv('--muted')};font-weight:700`}))
+      .textContent=r.winner+' '+r.winner_pct.toFixed(0)+'%';
+  });
+  h.appendChild(s);
+}
+function c9(){ const h=document.getElementById('c9');h.innerHTML='';
+  const tiers=D.local.tiers.slice().sort((a,b)=>a.avg_voters-b.avg_voters);
+  const W=880,H=320,mL=48,mR=16,mT=24,mB=64,max=32;
+  const s=el('svg',{viewBox:`0 0 ${W} ${H}`}),pw=W-mL-mR,ph=H-mT-mB,y=v=>mT+ph-v/max*ph;
+  for(let g=0;g<=30;g+=10){s.appendChild(el('line',{x1:mL,x2:W-mR,y1:y(g),y2:y(g),class:'gl'}));
+    s.appendChild(el('text',{x:mL-8,y:y(g)+4,'text-anchor':'end',class:'ax'})).textContent=g+'%';}
+  const bw=pw/tiers.length;
+  tiers.forEach((t,i)=>{
+    const bx=mL+i*bw+16,w=bw-32;
+    hov(s.appendChild(el('rect',{x:bx,y:y(t.jam_pct),width:w,height:ph-(y(t.jam_pct)-mT),fill:cv('--jam')})),
+      `<b>${t.tier}</b><br>${t.jam_units.toLocaleString()} of ${t.units.toLocaleString()} units (${t.jam_pct}%)<br>`+
+      `avg ${t.avg_voters.toLocaleString()} valid ballots per unit`);
+    s.appendChild(el('text',{x:bx+w/2,y:y(t.jam_pct)-8,'text-anchor':'middle',class:'val'})).textContent=t.jam_pct+'%';
+    s.appendChild(el('text',{x:bx+w/2,y:H-mB+20,'text-anchor':'middle',class:'cat',
+      style:'font-size:12px'})).textContent=t.tier;
+    s.appendChild(el('text',{x:bx+w/2,y:H-mB+37,'text-anchor':'middle',class:'ax',
+      style:'font-size:10.5px'})).textContent='~'+(t.avg_voters/1000).toFixed(0)+'k valid ballots';
+  });
+  s.appendChild(el('line',{x1:mL,x2:W-mR,y1:y(0),y2:y(0),class:'base'}));
+  h.appendChild(s);
+}
+function c10(){ /* rejected ballots by sex and place, with CIs */
+  const h=document.getElementById('c10');h.innerHTML='';
+  const rows=[['national','All single-sex centres'],['union','Villages'],
+              ['municipality','Small towns'],['city_corporation','Big cities']]
+    .map(k=>({label:k[1],d:X.rejected[k[0]]}));
+  const W=880,rowH=64,mL=190,mR=110,mT=26,mB=40,H=mT+mB+rows.length*rowH,max=3.2;
+  const s=el('svg',{viewBox:`0 0 ${W} ${H}`}),pw=W-mL-mR,x=v=>mL+v/max*pw;
+  for(let g=0;g<=3;g+=1){s.appendChild(el('line',{x1:x(g),x2:x(g),y1:mT-6,y2:H-mB,class:'gl'}));
+    s.appendChild(el('text',{x:x(g),y:H-mB+17,'text-anchor':'middle',class:'ax'})).textContent=g+'%';}
+  rows.forEach((r,i)=>{
+    const cy=mT+i*rowH;
+    s.appendChild(el('text',{x:mL-14,y:cy+22,'text-anchor':'end',class:'cat',
+      style:'font-size:13px;font-weight:700'})).textContent=r.label;
+    [['women',r.d.f,cv('--women'),4],['men',r.d.m,cv('--men'),24]].forEach(sr=>{
+      hov(s.appendChild(el('rect',{x:mL,y:cy+sr[3],width:Math.max(x(sr[1])-mL,1),height:15,fill:sr[2]})),
+        `<b>${r.label} — ${sr[0]}'s centres</b><br>${sr[1].toFixed(2)}% of ballots invalid<br>`+
+        `sex gap ${sgn(r.d.gap)} pts (range ${sgn(r.d.lo)} to ${sgn(r.d.hi)})`);
+      s.appendChild(el('text',{x:x(sr[1])+7,y:cy+sr[3]+12,class:'val',style:'font-size:11px'}))
+        .textContent=sr[0]+' '+sr[1].toFixed(2)+'%';
+    });
+    s.appendChild(el('text',{x:W-mR+12,y:cy+22,class:'ax',style:'font-size:10.5px;font-weight:700'}))
+      .textContent=`gap +${r.d.gap.toFixed(2)} [${r.d.lo.toFixed(2)}, ${r.d.hi.toFixed(2)}]`;
+  });
+  h.appendChild(s);
+}
+/* ---------- centre-level: distribution of party share across all centres ---------- */
+function ch1(){ if(!CE) return;
+  const lg=document.getElementById('leg-ch1'); lg.innerHTML='';
+  [['BNP',cv('--bnp')],['Jamaat',cv('--jam')]].forEach(p=>{const d=document.createElement('div');
+    d.className='i';d.innerHTML=`<span class="sw" style="background:${p[1]}"></span>${p[0]}`;lg.appendChild(d);});
+  const h=document.getElementById('ch1');h.innerHTML='';
+  const B=CE.hist.bnp,J=CE.hist.jam;
+  const totB=B.reduce((s,b)=>s+b.n,0),totJ=J.reduce((s,b)=>s+b.n,0);
+  const W=880,H=330,mL=48,mR=16,mT=20,mB=52;
+  const s=el('svg',{viewBox:`0 0 ${W} ${H}`}),pw=W-mL-mR,ph=H-mT-mB;
+  const max=Math.max(...B.map(b=>100*b.n/totB),...J.map(b=>100*b.n/totJ))*1.1;
+  const x=v=>mL+v/100*pw, y=v=>mT+ph-v/max*ph;
+  for(let g=0;g<=Math.floor(max);g+=2){s.appendChild(el('line',{x1:mL,x2:W-mR,y1:y(g),y2:y(g),class:'gl'}));
+    s.appendChild(el('text',{x:mL-8,y:y(g)+4,'text-anchor':'end',class:'ax'})).textContent=g+'%';}
+  for(let g=0;g<=100;g+=20){
+    s.appendChild(el('text',{x:x(g),y:H-mB+18,'text-anchor':'middle',class:'ax'})).textContent=g+'%';}
+  s.appendChild(el('text',{x:(mL+W-mR)/2,y:H-14,'text-anchor':'middle',class:'ax'}))
+    .textContent="the party's share of that centre's vote →";
+  const bw=pw/20;
+  [[B,totB,cv('--bnp'),'BNP'],[J,totJ,cv('--jam'),'Jamaat']].forEach(([arr,tot,col,nm])=>{
+    let dpath='';
+    arr.forEach((b,i)=>{ const v=100*b.n/tot, px=x(b.x)+bw/2;
+      dpath+=(i?'L':'M')+px+','+y(v);
+      hov(s.appendChild(el('rect',{x:x(b.x)+1,y:mT,width:bw-2,height:ph,fill:'transparent'})),
+        `<b>${nm} ${b.x}–${b.x+5}% of a centre's vote</b><br>${v.toFixed(1)}% of valid ballots in seats it contested`);
+    });
+    s.appendChild(el('path',{d:dpath,fill:'none',stroke:col,'stroke-width':2.5,'stroke-linejoin':'round'}));
+    arr.forEach(b=>{ const v=100*b.n/tot;
+      s.appendChild(el('circle',{cx:x(b.x)+bw/2,cy:y(v),r:2.6,fill:col})); });
+  });
+  s.appendChild(el('line',{x1:mL,x2:W-mR,y1:y(0),y2:y(0),class:'base'}));
+  h.appendChild(s);
+  document.getElementById('ch1n').textContent=
+    `The BNP line covers 41,160 centres in seats it contested; Jamaat’s covers 31,543. `+
+    `The height shows how many valid ballots came from centres in each five-point band.`;
+}
+/* ---------- centre-level: variance decomposition ---------- */
+function ch2(){ if(!CE) return;
+  const lg=document.getElementById('leg-ch2'); lg.innerHTML='';
+  [['From seat to seat',cv('--jam')],['Inside each seat',cv('--flat')]].forEach(p=>{
+    const d=document.createElement('div');d.className='i';
+    d.innerHTML=`<span class="sw" style="background:${p[1]}"></span>${p[0]}`;lg.appendChild(d);});
+  const h=document.getElementById('ch2');h.innerHTML='';
+  const rows=[['Jamaat','jam'],['BNP','bnp'],['Turnout','turnout']];
+  const W=880,rowH=72,mL=110,mR=70,mT=16,mB=40,H=mT+mB+rows.length*rowH;
+  const s=el('svg',{viewBox:`0 0 ${W} ${H}`}),pw=W-mL-mR,x=v=>mL+v/100*pw;
+  for(let g=0;g<=100;g+=20){s.appendChild(el('line',{x1:x(g),x2:x(g),y1:mT,y2:H-mB,class:'gl'}));
+    s.appendChild(el('text',{x:x(g),y:H-mB+17,'text-anchor':'middle',class:'ax'})).textContent=g+'%';}
+  s.appendChild(el('text',{x:(mL+W-mR)/2,y:H-mB+34,'text-anchor':'middle',class:'ax',
+    style:'font-size:11px'})).textContent='where the polling-centre difference appears';
+  rows.forEach((r,i)=>{
+    const v=CE.variance[r[1]],cy=mT+i*rowH+12,bh=30;
+    s.appendChild(el('text',{x:mL-14,y:cy+bh/2+4,'text-anchor':'end',class:'cat',
+      style:'font-size:13.5px;font-weight:700'})).textContent=r[0];
+    const within=v.within_share,between=100-within;
+    hov(s.appendChild(el('rect',{x:mL,y:cy,width:x(between)-mL,height:bh,fill:cv('--jam')})),
+      `<b>${r[0]} — from seat to seat</b><br>${(100-v.within_share).toFixed(0)}% of the measured difference`);
+    hov(s.appendChild(el('rect',{x:x(between)+2,y:cy,width:x(100)-x(between)-2,height:bh,fill:cv('--flat')})),
+      `<b>${r[0]} — inside each seat</b><br>${within}% of the measured difference`);
+    s.appendChild(el('text',{x:x(100)-8,y:cy+bh/2+5,'text-anchor':'end',class:'val',style:'font-size:12px'}))
+      .textContent=within.toFixed(0)+'% within';
+  });
+  h.appendChild(s);
+}
+/* ---------- centre-level: within-seat range plot ---------- */
+function ch3(){ if(!CE||!CE.ranges) return;
+  const lg=document.getElementById('leg-ch3'); lg.innerHTML='';
+  [['Middle 80% of the seat’s centres',cv('--flat')],
+   ['Simple centre average',cv('--jam')]].forEach(p=>{
+    const d=document.createElement('div');d.className='i';
+    d.innerHTML=`<span class="sw" style="background:${p[1]}"></span>${p[0]}`;lg.appendChild(d);});
+  const h=document.getElementById('ch3');h.innerHTML='';
+  const rows=CE.ranges;
+  const W=880,rowH=15,mL=150,mR=40,mT=12,mB=34,H=mT+mB+rows.length*rowH;
+  const s=el('svg',{viewBox:`0 0 ${W} ${H}`}),pw=W-mL-mR,x=v=>mL+v/100*pw;
+  for(let g=0;g<=100;g+=20){s.appendChild(el('line',{x1:x(g),x2:x(g),y1:mT,y2:H-mB,class:'gl'}));
+    s.appendChild(el('text',{x:x(g),y:H-mB+17,'text-anchor':'middle',class:'ax'})).textContent=g+'%';}
+  s.appendChild(el('text',{x:(mL+W-mR)/2,y:H-mB+33,'text-anchor':'middle',class:'ax',
+    style:'font-size:11px'})).textContent="Jamaat's share of the vote in a single polling centre →";
+  rows.forEach((r,i)=>{
+    const cy=mT+rowH*i+rowH/2;
+    if(i%2===0) s.appendChild(el('text',{x:mL-10,y:cy+4,'text-anchor':'end',class:'ax',
+      style:'font-size:10px'})).textContent=r.n;
+    s.appendChild(el('line',{x1:x(r.p10),x2:x(r.p90),y1:cy,y2:cy,stroke:cv('--flat'),
+      'stroke-width':5,'stroke-linecap':'round'}));
+    hov(s.appendChild(el('circle',{cx:x(r.mean),cy:cy,r:3.6,fill:cv('--jam'),
+      stroke:cv('--surface'),'stroke-width':1})),
+      `<b>${r.n}</b><br>simple centre average ${r.mean}%<br>middle 80%: ${r.p10}% to ${r.p90}% `+
+      `(a ${(r.p90-r.p10).toFixed(1)}-point span across ${r.cn} centres)`);
+  });
+  h.appendChild(s);
+}
+/* ---------- between vs within, the correction chart ---------- */
+function cw(){ if(!WI) return;
+  const lg=document.getElementById('leg-cw'); lg.innerHTML='';
+  [['Across whole constituencies',cv('--flat')],
+   ['Among unions in the same seat',cv('--jam')]].forEach(p=>{
+    const d=document.createElement('div');d.className='i';
+    d.innerHTML=`<span class="sw" style="background:${p[1]}"></span>${p[0]}`;lg.appendChild(d);});
+  const h=document.getElementById('cw');h.innerHTML='';
+  const rows=[['Jamaat',WI.minority.jamaat,cv('--jam')],['BNP',WI.minority.bnp,cv('--bnp')],
+              ['Turnout',WI.minority.turnout,cv('--flat')]].filter(r=>r[1]);
+  const W=880,rowH=86,mL=120,mR=118,mT=26,mB=44,H=mT+mB+rows.length*rowH;
+  const lo=-0.55,hi=0.45;
+  const s=el('svg',{viewBox:`0 0 ${W} ${H}`}),pw=W-mL-mR,x=v=>mL+(v-lo)/(hi-lo)*pw;
+  for(let g=-0.5;g<=0.4001;g+=0.1){
+    s.appendChild(el('line',{x1:x(g),x2:x(g),y1:mT-8,y2:H-mB,class:'gl'}));
+    s.appendChild(el('text',{x:x(g),y:H-mB+17,'text-anchor':'middle',class:'ax'}))
+      .textContent=(Math.abs(g)<.001?'0':(g>0?'+':'')+g.toFixed(1));}
+  s.appendChild(el('line',{x1:x(0),x2:x(0),y1:mT-14,y2:H-mB,stroke:cv('--ink'),'stroke-width':1.5}));
+  s.appendChild(el('text',{x:(x(lo)+x(0))/2,y:H-mB+34,'text-anchor':'middle',class:'ax',
+    style:'font-size:11px'})).textContent='← higher estimated share, less of this party';
+  s.appendChild(el('text',{x:(x(0)+x(hi))/2,y:H-mB+34,'text-anchor':'middle',class:'ax',
+    style:'font-size:11px'})).textContent='higher estimated share, more of this party →';
+  rows.forEach((r,i)=>{
+    const v=r[1],cy=mT+i*rowH+14;
+    s.appendChild(el('text',{x:mL-14,y:cy+22,'text-anchor':'end',class:'cat',
+      style:'font-size:14px;font-weight:700'})).textContent=r[0];
+    /* between */
+    hov(s.appendChild(el('rect',{x:Math.min(x(0),x(v.between_r)),y:cy,
+      width:Math.max(Math.abs(x(v.between_r)-x(0)),1.5),height:16,fill:cv('--flat')})),
+      `<b>${r[0]} — across whole constituencies</b><br>The line was nearly flat.`);
+    s.appendChild(el('text',{x:(v.between_r<0?x(v.between_r)-8:x(v.between_r)+8),y:cy+12,
+      'text-anchor':v.between_r<0?'end':'start',class:'ax',style:'font-size:11px'}))
+      .textContent='whole seats';
+    /* within */
+    const col=v.sig?r[2]:cv('--flat');
+    hov(s.appendChild(el('rect',{x:Math.min(x(0),x(v.within_r)),y:cy+24,
+      width:Math.max(Math.abs(x(v.within_r)-x(0)),1.5),height:22,fill:col})),
+      `<b>${r[0]} — among unions in the same seat</b><br>`+
+      `A 10-point higher estimated minority share lined up with ${v.within_slope>0?'+':''}${(v.within_slope*10).toFixed(1)} result points.<br>`+
+      `Likely range ${v.lo>0?'+':''}${(v.lo*10).toFixed(1)} to ${v.hi>0?'+':''}${(v.hi*10).toFixed(1)}<br>`+
+      `${v.n_units.toLocaleString()} unions in ${v.n_seats} seats`+
+      (v.sig?'':'<br>No clear pattern.'));
+    s.appendChild(el('text',{x:(v.within_r<0?x(v.within_r)-8:x(v.within_r)+8),y:cy+39,
+      'text-anchor':v.within_r<0?'end':'start',class:'val',
+      style:`font-size:12.5px;fill:${inkOf(col)}`}))
+      .textContent=v.sig?'inside seats':'no clear pattern';
+  });
+  h.appendChild(s);
+}
+/* ---------- within-seat quintiles ---------- */
+function cq(){ if(!WI||!WI.within_quintiles) return;
+  const h=document.getElementById('cq');h.innerHTML='';
+  const rows=WI.within_quintiles;
+  const W=880,rowH=64,mL=210,mR=60,mT=26,mB=42,H=mT+mB+rows.length*rowH;
+  const lo=-5,hi=5;
+  const s=el('svg',{viewBox:`0 0 ${W} ${H}`}),pw=W-mL-mR,x=v=>mL+(v-lo)/(hi-lo)*pw;
+  for(let g=-4;g<=4;g+=2){s.appendChild(el('line',{x1:x(g),x2:x(g),y1:mT-8,y2:H-mB,class:'gl'}));
+    s.appendChild(el('text',{x:x(g),y:H-mB+17,'text-anchor':'middle',class:'ax'}))
+      .textContent=(g>0?'+':'')+g;}
+  s.appendChild(el('line',{x1:x(0),x2:x(0),y1:mT-14,y2:H-mB,stroke:cv('--ink'),'stroke-width':1.5}));
+  s.appendChild(el('text',{x:x(0),y:mT-18,'text-anchor':'middle',class:'ax',style:'font-weight:700'}))
+    .textContent="same as its own constituency";
+  s.appendChild(el('text',{x:(mL+W-mR)/2,y:H-mB+34,'text-anchor':'middle',class:'ax',
+    style:'font-size:11px'})).textContent='points above or below the constituency average';
+  rows.forEach((r,i)=>{
+    const cy=mT+i*rowH+8;
+    s.appendChild(el('text',{x:mL-14,y:cy+16,'text-anchor':'end',class:'cat',
+      style:'font-size:12.5px;font-weight:700'}))
+      .textContent=(r.d_minority>0?'+':'')+r.d_minority+' pts minority';
+    s.appendChild(el('text',{x:mL-14,y:cy+32,'text-anchor':'end',class:'ax'}))
+      .textContent=r.n.toLocaleString()+' unions';
+    [['Jamaat',r.d_jam,cv('--jam'),0],['BNP',r.d_bnp,cv('--bnp'),20]].forEach(sr=>{
+      hov(s.appendChild(el('rect',{x:Math.min(x(0),x(sr[1])),y:cy+sr[3],
+        width:Math.max(Math.abs(x(sr[1])-x(0)),1.5),height:17,fill:sr[2]})),
+        `<b>${sr[0]}</b><br>${sr[1]>0?'+':''}${sr[1]} points vs its own constituency`);
+      s.appendChild(el('text',{x:(sr[1]<0?x(sr[1])-7:x(sr[1])+7),y:cy+sr[3]+13,
+        'text-anchor':sr[1]<0?'end':'start',class:'val',style:'font-size:11.5px'}))
+        .textContent=sr[0]+' '+(sr[1]>0?'+':'')+sr[1];
+    });
+  });
+  h.appendChild(s);
+}
+function c12(){ /* upazila scatter: u35 vs turnout */
+  if(!D.upazila||!D.upazila.scatter) return;
+  const h=document.getElementById('c12'); if(!h)return; h.innerHTML='';
+  const pts=D.upazila.scatter;
+  const W=880,H=430,mL=52,mR=18,mT=16,mB=48;
+  const xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]);
+  const x0=Math.floor(Math.min(...xs)/5)*5,x1=Math.ceil(Math.max(...xs)/5)*5;
+  const y0=Math.floor(Math.min(...ys)/10)*10,y1=Math.ceil(Math.max(...ys)/10)*10;
+  const s=el('svg',{viewBox:`0 0 ${W} ${H}`}),pw=W-mL-mR,ph=H-mT-mB;
+  const x=v=>mL+(v-x0)/(x1-x0)*pw, y=v=>mT+ph-(v-y0)/(y1-y0)*ph;
+  for(let g=y0;g<=y1;g+=10){s.appendChild(el('line',{x1:mL,x2:W-mR,y1:y(g),y2:y(g),class:'gl'}));
+    s.appendChild(el('text',{x:mL-8,y:y(g)+4,'text-anchor':'end',class:'ax'})).textContent=g+'%';}
+  for(let g=x0;g<=x1;g+=5){
+    s.appendChild(el('text',{x:x(g),y:H-mB+18,'text-anchor':'middle',class:'ax'})).textContent=g+'%';}
+  s.appendChild(el('text',{x:(mL+W-mR)/2,y:H-12,'text-anchor':'middle',class:'ax'}))
+    .textContent='share of the roll under 35 →';
+  /* simple weighted trend line via least squares on the shown points */
+  const n=pts.length,mx=xs.reduce((a,b)=>a+b,0)/n,my=ys.reduce((a,b)=>a+b,0)/n;
+  const slope=xs.map((v,i)=>(v-mx)*(ys[i]-my)).reduce((a,b)=>a+b,0)/
+              xs.map(v=>(v-mx)**2).reduce((a,b)=>a+b,0);
+  const yA=my+slope*(x0+1-mx), yB=my+slope*(x1-1-mx);
+  s.appendChild(el('line',{x1:x(x0+1),y1:y(yA),x2:x(x1-1),y2:y(yB),
+    stroke:cv('--ink'),'stroke-width':1.5,'stroke-dasharray':'6 4',opacity:.6}));
+  pts.forEach(p=>{
+    hov(s.appendChild(el('circle',{cx:x(p[0]),cy:y(p[1]),r:3.4,fill:cv('--ncp'),
+      opacity:.55,stroke:cv('--surface'),'stroke-width':.8})),
+      `<b>${p[3]}</b><br>${p[0]}% of roll under 35 · valid-ballot rate ${p[1]}%`);
+  });
+  h.appendChild(s);
+}
+function c11(){ /* the women's gap sliced every way */
+  const h=document.getElementById('c11');if(!h)return;h.innerHTML='';
+  const G=X.women;
+  const rows=[
+    ['Villages',G.by_type.union],['Small towns',G.by_type.municipality],['Big cities',G.by_type.city_corporation],
+    ['South-west belt',G.by_region.belt],['Rest of country',G.by_region.rest],
+    ['Most-minority seats',G.by_minority.q4],['Mid-minority seats',G.by_minority.q3],['Fewest-minority seats',G.by_minority.q1],
+    ['Youngest seats',G.by_age.q4],['Oldest seats',G.by_age.q1],
+    ['Close seats (<5 pts)',G.by_competitiveness['close (<5)']],['Landslides (15+)',G.by_competitiveness['landslide (15+)']],
+  ].filter(r=>r[1]);
+  const W=880,rowH=34,mL=210,mR=110,mT=14,mB=44,H=mT+mB+rows.length*rowH,lo=-1.5,hi=5.6;
+  const s=el('svg',{viewBox:`0 0 ${W} ${H}`}),pw=W-mL-mR,x=v=>mL+(v-lo)/(hi-lo)*pw;
+  for(let g=-1;g<=5;g+=1){s.appendChild(el('line',{x1:x(g),x2:x(g),y1:mT,y2:H-mB,class:'gl'}));
+    s.appendChild(el('text',{x:x(g),y:H-mB+17,'text-anchor':'middle',class:'ax'})).textContent=(g>0?'+':'')+g;}
+  s.appendChild(el('line',{x1:x(0),x2:x(0),y1:mT,y2:H-mB,stroke:cv('--ink'),'stroke-width':1.5}));
+  s.appendChild(el('text',{x:(x(0)+x(hi))/2,y:H-mB+34,'text-anchor':'middle',class:'ax',
+    style:'font-size:11px'})).textContent='Jamaat gains among women →';
+  rows.forEach((r,i)=>{
+    const g=r[1],cy=mT+rowH*i+rowH/2,col=g.sig?(g.jam_gap>0?cv('--jam'):cv('--bnp')):cv('--flat');
+    s.appendChild(el('text',{x:mL-12,y:cy+4,'text-anchor':'end',class:'cat',
+      style:'font-size:12px'})).textContent=r[0];
+    s.appendChild(el('line',{x1:x(g.lo),x2:x(g.hi),y1:cy,y2:cy,stroke:col,'stroke-width':6,
+      opacity:.3,'stroke-linecap':'round'}));
+    hov(s.appendChild(el('circle',{cx:x(g.jam_gap),cy:cy,r:6,fill:col,stroke:cv('--surface'),'stroke-width':2})),
+      `<b>${r[0]}</b><br>Jamaat among women ${sgn(g.jam_gap)} pts (men ${g.jam_m}% → women ${g.jam_f}%)<br>`+
+      `range ${sgn(g.lo)} to ${sgn(g.hi)} · ${g.n_seats} seats, ${g.n_centres.toLocaleString()} centres`+
+      (g.sig?'':'<br>not distinguishable from zero'));
+    s.appendChild(el('text',{x:x(Math.max(g.hi,g.jam_gap))+10,y:cy+4,class:'val',
+      style:`font-size:11px;fill:${g.sig?inkOf(col):cv('--muted')}`}))
+      .textContent=sgn(g.jam_gap)+(g.sig?'':' ns');
+  });
+  h.appendChild(s);
+}
+
+/* ---------- age: the same association measured between and within seats ---------- */
+function cAgeScale(){
+  if(!WI?.u35)return;
+  const h=document.getElementById('c-age-scale');if(!h)return;h.innerHTML='';
+  const lg=document.getElementById('leg-age-scale');lg.innerHTML='';
+  /* Hue is already carrying the row variable here, so the two estimates are told
+     apart by shape — hollow ring vs solid dot — exactly as they are drawn. */
+  [['Across whole constituencies',cv('--muted'),false],['Among unions in the same seat',cv('--ink2s'),true]]
+    .forEach(p=>{
+      const d=document.createElement('div');d.className='i';
+      d.innerHTML=`<span class="sw" style="border-radius:50%;box-shadow:none;background:${p[2]?p[1]:'transparent'};`+
+        `border:2px solid ${p[1]}"></span>${p[0]}`;
+      lg.appendChild(d);
+    });
+  const rows=[['Jamaat',WI.u35.jamaat,cv('--jam')],['BNP',WI.u35.bnp,cv('--bnp')],
+              ['Valid-ballot rate',WI.u35.turnout,cv('--ncp')]];
+  const W=880,rowH=82,mL=190,mR=90,mT=28,mB=54,H=mT+mB+rows.length*rowH,lo=-.5,hi=.5;
+  const s=el('svg',{viewBox:`0 0 ${W} ${H}`}),pw=W-mL-mR,x=v=>mL+(v-lo)/(hi-lo)*pw;
+  for(let g=-.4;g<=.4001;g+=.2){
+    s.appendChild(el('line',{x1:x(g),x2:x(g),y1:mT-8,y2:H-mB,class:'gl'}));
+    s.appendChild(el('text',{x:x(g),y:H-mB+18,'text-anchor':'middle',class:'ax'})).textContent=(g>0?'+':'')+g.toFixed(1);
+  }
+  s.appendChild(el('line',{x1:x(0),x2:x(0),y1:mT-10,y2:H-mB,stroke:cv('--ink'),'stroke-width':1.4}));
+  rows.forEach((r,i)=>{
+    const d=r[1],cy=mT+i*rowH+rowH/2,col=r[2];
+    s.appendChild(el('text',{x:mL-14,y:cy+5,'text-anchor':'end',class:'cat',style:'font-size:13.5px;font-weight:700'})).textContent=r[0];
+    s.appendChild(el('line',{x1:x(d.between_r),x2:x(d.within_r),y1:cy,y2:cy,stroke:cv('--line'),'stroke-width':6,'stroke-linecap':'round'}));
+    hov(s.appendChild(el('circle',{cx:x(d.between_r),cy,r:7,fill:cv('--surface'),stroke:cv('--muted'),'stroke-width':2.4})),
+      `<b>${r[0]} — across whole constituencies</b><br>As the under-35 share rose, ${r[0].toLowerCase()} tended to ${d.between_r<0?'fall':'rise'}.`);
+    hov(s.appendChild(el('circle',{cx:x(d.within_r),cy,r:7.5,fill:col,stroke:cv('--surface'),'stroke-width':2})),
+      `<b>${r[0]} — among unions in the same seat</b><br>`+
+      `A 10-point higher under-35 share lined up with ${d.within_slope>0?'+':''}${(d.within_slope*10).toFixed(1)} result points.<br>`+
+      `Likely range ${(d.lo*10).toFixed(1)} to ${(d.hi*10).toFixed(1)} · ${d.n_units.toLocaleString()} unions`);
+    s.appendChild(el('text',{x:x(d.between_r)+(d.between_r<=d.within_r?-10:10),y:cy-13,
+      'text-anchor':d.between_r<=d.within_r?'end':'start',class:'ax'})).textContent='whole seats';
+    s.appendChild(el('text',{x:x(d.within_r)+(d.within_r>=d.between_r?10:-10),y:cy+19,
+      'text-anchor':d.within_r>=d.between_r?'start':'end',class:'val',style:`fill:${inkOf(col)}`})).textContent='inside seats';
+  });
+  s.appendChild(el('text',{x:(mL+W-mR)/2,y:H-12,'text-anchor':'middle',class:'ax'})).textContent='← as the under-35 share rises, the result falls · the result rises →';
+  h.appendChild(s);
+}
+
+/* ---------- women: strict same-building comparison by settlement ---------- */
+function cWomenPaired(){
+  const P=D?.women?.paired;if(!P)return;
+  const h=document.getElementById('c-women-paired');if(!h)return;h.innerHTML='';
+  const lg=document.getElementById('leg-women-paired');lg.innerHTML='';
+  const items=[['Same building, with uncertainty range',cv('--ink'),false],['All single-sex centres in that place',cv('--muted'),true]];
+  items.forEach(it=>{const d=document.createElement('div');d.className='i';
+    d.innerHTML=`<span class="sw" style="border-radius:50%;background:${it[2]?'transparent':it[1]};border:2px solid ${it[1]}"></span>${it[0]}`;lg.appendChild(d);});
+  const W=880,rowH=82,mL=205,mR=95,mT=28,mB=58,H=mT+mB+P.by_geo.length*rowH,lo=-4.5,hi=5;
+  const s=el('svg',{viewBox:`0 0 ${W} ${H}`}),pw=W-mL-mR,x=v=>mL+(v-lo)/(hi-lo)*pw;
+  for(let g=-4;g<=4;g+=2){s.appendChild(el('line',{x1:x(g),x2:x(g),y1:mT-9,y2:H-mB,class:'gl'}));
+    s.appendChild(el('text',{x:x(g),y:H-mB+18,'text-anchor':'middle',class:'ax'})).textContent=(g>0?'+':'')+g;}
+  s.appendChild(el('line',{x1:x(0),x2:x(0),y1:mT-10,y2:H-mB,stroke:cv('--ink'),'stroke-width':1.5}));
+  P.by_geo.forEach((g,i)=>{
+    const cy=mT+i*rowH+rowH/2,d=g.margin,col=d.mean<0?cv('--bnp'):cv('--jam'),broad=X.women.by_type[g.t]?.margin_move;
+    const label=g.t==='union'?'Villages':g.t==='municipality'?'Small towns':'Big cities';
+    s.appendChild(el('text',{x:mL-14,y:cy-3,'text-anchor':'end',class:'cat',style:'font-size:13.5px;font-weight:700'})).textContent=label;
+    s.appendChild(el('text',{x:mL-14,y:cy+16,'text-anchor':'end',class:'ax'})).textContent=`${g.n.toLocaleString()} buildings`;
+    hov(s.appendChild(el('line',{x1:x(d.lo),x2:x(d.hi),y1:cy,y2:cy,stroke:col,'stroke-width':5,'stroke-linecap':'round'})),
+      `<b>${label} — same-building match</b><br>${d.mean>0?'+':''}${d.mean.toFixed(2)} points<br>uncertainty range ${d.lo.toFixed(2)} to ${d.hi.toFixed(2)} · ${g.n} buildings`);
+    s.appendChild(el('circle',{cx:x(d.mean),cy,r:7.5,fill:col,stroke:cv('--surface'),'stroke-width':2}));
+    if(Number.isFinite(broad))hov(s.appendChild(el('circle',{cx:x(broad),cy,r:6.5,fill:cv('--surface'),stroke:cv('--muted'),'stroke-width':2})),
+      `<b>${label} — all single-sex centres</b><br>${broad>0?'+':''}${broad.toFixed(2)} points toward ${broad>0?'Jamaat':'the BNP'}<br>unmatched reference estimate`);
+    s.appendChild(el('text',{x:d.mean<0?x(d.lo)-10:x(d.hi)+10,y:cy+5,'text-anchor':d.mean<0?'end':'start',class:'val',style:`fill:${inkOf(col)}`}))
+      .textContent=(d.mean>0?'+':'')+d.mean.toFixed(2);
+  });
+  s.appendChild(el('text',{x:x(-2.5),y:H-15,'text-anchor':'middle',class:'ax'})).textContent='← women-side margin moves toward BNP';
+  s.appendChild(el('text',{x:x(2.7),y:H-15,'text-anchor':'middle',class:'ax'})).textContent='women-side margin moves toward Jamaat →';
+  h.appendChild(s);
+}
+
+/* ---------- the whole-city result and the wards that compose it ---------- */
+function cCities(){
+  const h=document.getElementById('c-cities');if(!h)return;
+  if(!UNITGJ){h.innerHTML='<div class="note">City-ward totals load as this chapter approaches.</div>';return;}
+  h.innerHTML='';
+  const wards=UNITGJ.features.map(f=>f.properties).filter(p=>p.t==='cc'&&p.mg!=null);
+  const grouped=new Map();wards.forEach(p=>{if(!grouped.has(p.z))grouped.set(p.z,[]);grouped.get(p.z).push(p);});
+  const partyNames=['BNP','Jamaat','Independent','IAB','KM','NCP'];
+  const cities=[...grouped].map(([name,a])=>{
+    const votes=partyNames.map((_,i)=>a.reduce((n,p)=>n+(+p.v[i]||0),0)),
+      valid=a.reduce((n,p)=>n+(+p.tt||0),0),registered=a.reduce((n,p)=>n+(+p.tv||0),0),
+      order=votes.map((v,i)=>({v,i})).sort((x,y)=>y.v-x.v),leader=partyNames[order[0].i],
+      margin=100*(order[0].v-order[1].v)/valid,counts={};
+    a.forEach(p=>counts[p.w]=(counts[p.w]||0)+1);
+    return {name,a,votes,valid,registered,leader,margin,counts,close:a.filter(p=>+p.mg<5).length,
+      diff:a.filter(p=>p.w!==leader).length};
+  }).sort((a,b)=>a.margin-b.margin);
+  const lg=document.getElementById('leg-cities');lg.innerHTML='';
+  [['BNP',cv('--bnp')],['Jamaat',cv('--jam')],['Khelafat Majlis',cv('--km')],['All other candidates',cv('--flat')]].forEach(p=>{
+    const d=document.createElement('div');d.className='i';d.innerHTML=`<span class="sw" style="background:${p[1]}"></span>${p[0]}`;lg.appendChild(d);});
+  const W=1000,rowH=51,mL=175,mR=315,mT=22,mB=48,H=mT+mB+cities.length*rowH;
+  const s=el('svg',{viewBox:`0 0 ${W} ${H}`}),pw=W-mL-mR,x=v=>mL+v/100*pw;
+  for(let g=0;g<=100;g+=20){s.appendChild(el('line',{x1:x(g),x2:x(g),y1:mT-6,y2:H-mB,class:'gl'}));
+    s.appendChild(el('text',{x:x(g),y:H-mB+18,'text-anchor':'middle',class:'ax'})).textContent=g+'%';}
+  cities.forEach((c,i)=>{
+    const cy=mT+i*rowH+9,bh=24,label=c.name.replace(' City Corporation',''),
+      vals=[c.votes[0],c.votes[1],c.votes[4],Math.max(0,c.valid-c.votes[0]-c.votes[1]-c.votes[4])],
+      cols=[cv('--bnp'),cv('--jam'),cv('--km'),cv('--flat')],names=['BNP','Jamaat','Khelafat Majlis','All others'];
+    s.appendChild(el('text',{x:mL-13,y:cy+bh/2+4,'text-anchor':'end',class:'cat',style:'font-size:12.5px;font-weight:700'})).textContent=label;
+    let acc=0;vals.forEach((v,j)=>{const share=100*v/c.valid,x0=x(acc),x1=x(acc+share);
+      hov(s.appendChild(el('rect',{x:x0,y:cy,width:Math.max(x1-x0-.5,1),height:bh,fill:cols[j]})),
+        `<b>${c.name} — ${names[j]}</b><br>${share.toFixed(1)}% · ${v.toLocaleString()} valid votes`);
+      acc+=share;
+    });
+    const otherW=c.a.length-(c.counts.BNP||0)-(c.counts.Jamaat||0);
+    s.appendChild(el('text',{x:W-mR+12,y:cy+10,class:'val',style:`font-size:11px;fill:${inkOf(PARTY()[c.leader])||cv('--ink')}`}))
+      .textContent=`${c.leader} +${c.margin.toFixed(c.margin<10?1:0)} pts`;
+    s.appendChild(el('text',{x:W-mR+12,y:cy+26,class:'ax',style:'font-size:10.5px'}))
+      .textContent=`wards BNP ${c.counts.BNP||0} · Jamaat ${c.counts.Jamaat||0} · other ${otherW} · ${c.close} under 5 · turnout ${(c.registered?100*c.valid/c.registered:0).toFixed(1)}%`;
+  });
+  s.appendChild(el('text',{x:(mL+W-mR)/2,y:H-12,'text-anchor':'middle',class:'ax'})).textContent='share of valid votes assembled from ward returns';
+  h.appendChild(s);set('c-city-diff',cities.reduce((n,c)=>n+c.diff,0));
+}
+
+/* ---------- local boundaries: how close the parliamentary baseline was ---------- */
+function cLocalMargins(){
+  const h=document.getElementById('c-local-margins');if(!h)return;
+  if(!UNITGJ||!MAPS.m4?.uz){h.innerHTML='<div class="note">Local boundary totals load as this chapter approaches.</div>';return;}
+  h.innerHTML='';
+  const lg=document.getElementById('leg-local-margins');lg.innerHTML='';
+  /* an ordinal scale, so it stays inside one hue and darkens with closeness */
+  const bins=[['Under 5 points',0,5,'#b9590a','#ffffff'],['5–10',5,10,'#f28124',cv('--ink')],
+              ['10–20',10,20,'#f9c79e',cv('--ink')],['20 or more',20,Infinity,cv('--surface2'),cv('--ink')]];
+  bins.forEach(b=>{const d=document.createElement('div');d.className='i';d.innerHTML=`<span class="sw" style="background:${b[3]};border:1px solid ${cv('--line')}"></span>${b[0]}`;lg.appendChild(d);});
+  const feats=[...UNITGJ.features,...MAPS.m4.uz.features];
+  const specs=[['Unions','u'],['Municipalities','m'],['City wards','cc'],['Upazilas','uz']];
+  const rows=specs.map(sp=>{const a=feats.filter(f=>{const p=f.properties;return p.t===sp[1]&&
+      p.w!=='NoResult'&&p.w!=='NoCentres'&&p.mg!=null&&Number.isFinite(+p.mg);});
+    return {label:sp[0],n:a.length,counts:bins.map(b=>a.filter(f=>+f.properties.mg>=b[1]&&+f.properties.mg<b[2]).length)};});
+  const W=880,rowH=68,mL=185,mR=75,mT=16,mB=46,H=mT+mB+rows.length*rowH;
+  const s=el('svg',{viewBox:`0 0 ${W} ${H}`}),pw=W-mL-mR,x=v=>mL+v/100*pw;
+  for(let g=0;g<=100;g+=20){s.appendChild(el('line',{x1:x(g),x2:x(g),y1:mT,y2:H-mB,class:'gl'}));
+    s.appendChild(el('text',{x:x(g),y:H-mB+18,'text-anchor':'middle',class:'ax'})).textContent=g+'%';}
+  rows.forEach((r,i)=>{
+    const cy=mT+i*rowH+16,bh=30;let acc=0;
+    s.appendChild(el('text',{x:mL-14,y:cy+bh/2+4,'text-anchor':'end',class:'cat',style:'font-size:13.5px;font-weight:700'})).textContent=r.label;
+    r.counts.forEach((n,j)=>{const share=100*n/r.n,x0=x(acc),x1=x(acc+share),b=bins[j];
+      hov(s.appendChild(el('rect',{x:x0,y:cy,width:Math.max(x1-x0-.8,1),height:bh,fill:b[3],stroke:cv('--line'),'stroke-width':.5})),
+        `<b>${r.label} — ${b[0]}</b><br>${n.toLocaleString()} of ${r.n.toLocaleString()} units (${share.toFixed(1)}%)`);
+      if(share>11)s.appendChild(el('text',{x:(x0+x1)/2,y:cy+bh/2+4,'text-anchor':'middle',class:'val',
+        style:`font-size:11px;fill:${b[4]}`})).textContent=share.toFixed(1)+'%';
+      acc+=share;
+    });
+    s.appendChild(el('text',{x:W-mR+10,y:cy+bh/2+4,class:'ax'})).textContent='n='+r.n.toLocaleString();
+  });
+  h.appendChild(s);
+}
+
+/* ============================================================ copy */
+function fillText(){
+  const N=D.national,S=D.settlement,A=D.age,F=D.religion,W4=D.women,Lc=D.local,G=X.women;
+  set('h-roll',(A.national.rows_seen||A.national.voters).toLocaleString());
+  set('h-cast',fmtM(N.cast)); set('h-turnout',N.turnout.toFixed(1)+'%');
+  set('h-first',(100*A.national.first_time_share).toFixed(1)+'%');
+  const ps=N.party_seats;
+  set('s1-seats',N.seats_declared); set('s1-bnp',ps.BNP);
+  set('s1-bnps',pct(N.party_share.BNP)); set('s1-jam',ps.Jamaat); set('s1-jams',pct(N.party_share.Jamaat));
+  const jamSeatShare=100*ps.Jamaat/N.seats_declared;
+  set('s1-jam-seatshare',jamSeatShare.toFixed(1)+'%');
+  set('s1-jam-gap',(N.party_share.Jamaat-jamSeatShare).toFixed(1));
+  set('r-indseats',ps.Independent||0); set('r-ncpseats',ps.NCP||0);
+  const totE=S.union.electorate+S.municipality.electorate+S.city_corporation.electorate;
+  set('s2-u',(100*S.union.electorate/totE).toFixed(0)+'%');
+  set('s2-jamcc',pct(S.city_corporation.coalition['Jamaat-led Coalition']));
+  set('s2-tou',pct(S.union.turnout)); set('s2-tom',pct(S.municipality.turnout));
+  set('s2-tocc',pct(S.city_corporation.turnout));
+  set('s2-gu',(X.turnout_sex.union.m-X.turnout_sex.union.f).toFixed(1));
+  set('s2-gc',(X.turnout_sex.city_corporation.m-X.turnout_sex.city_corporation.f).toFixed(1));
+  set('s2-fcc',pct(X.turnout_sex.city_corporation.f));
+  set('s2-cityu35',A.city_rolls.city.u35.toFixed(0)+'%');
+  set('s2-ruralu35',A.city_rolls.rural.u35.toFixed(0)+'%');
+  set('s3-med',A.national.median_age.toFixed(0));
+  set('s3-first',(100*A.national.first_time_share).toFixed(1)+'%');
+  set('s3-firstn',(A.national.voters*A.national.first_time_share/1e6).toFixed(1));
+  set('s3-between',WI?`r = ${WI.u35.turnout.between_r.toFixed(2)}`:'r = −0.42');
+  set('s3-within',WI?`r = ${WI.u35.turnout.within_r>=0?'+':''}${WI.u35.turnout.within_r.toFixed(2)}`:'r = +0.13');
+  set('a-rolln',(A.national.voters/1e6).toFixed(1)+' million');
+  set('s3-rjam',A.corr.jam.toFixed(2)); set('a-rjam2',A.corr.jam.toFixed(2));
+  set('a-rbnp',A.corr.bnp.toFixed(2)); set('a-rto',A.corr.turnout.toFixed(2));
+  const q=A.quartiles; set('s3-toq',(q[0].turnout-q[3].turnout).toFixed(1));
+  D._u35q1=[...Object.values(D.seatmap)].map(s=>s.u35).filter(v=>v!=null).sort((a,b)=>a-b)
+    [Math.floor(.25*Object.values(D.seatmap).filter(s=>s.u35!=null).length)];
+  set('s4-gap',(W4.headline.jamaat.f-W4.headline.jamaat.m).toFixed(1));
+  set('s4-village',sgn(G.by_type.union.jam_gap));
+  set('s4-town',sgn(G.by_type.municipality.jam_gap));
+  set('s4-city',sgn(G.by_type.city_corporation.jam_gap));
+  set('s4-beltg',sgn(G.by_region.belt.jam_gap)); set('s4-restg',sgn(G.by_region.rest.jam_gap));
+  set('s4-beltf',pct(X.turnout_sex.belt.f));
+  set('s4-rejf',X.rejected.national.f.toFixed(2)+'%'); set('s4-rejm',X.rejected.national.m.toFixed(2)+'%');
+  set('s4-rejg',sgn(X.rejected.national.gap));
+  const FN=F.national,ftot=FN.rows;
+  set('s5-mus',(100*FN.muslim/ftot).toFixed(1)+'%');
+  set('s5-hin',(100*FN.hindu/ftot).toFixed(1)+'%');
+  set('s5-ind',(100*FN.indigenous/ftot).toFixed(1)+'%');
+  set('s5-nmn',((FN.hindu+FN.indigenous+FN.buddhist+FN.christian)/1e6).toFixed(1));
+  set('s5-beltr',F.belt_split.belt.corr_jam.toFixed(2)); set('s5-restr',F.belt_split.rest.corr_jam.toFixed(2));
+  const fq=F.quartiles; set('s5-q4to',pct(fq[3].turnout)); set('s5-q1to',pct(fq[0].turnout));
+  if(WI){
+    const mj=WI.minority.jamaat,mb=WI.minority.bnp;
+    set('s5-natr',mj.between_r.toFixed(2));
+    set('s5-nunits',WI.n_union.toLocaleString());
+    set('s5-withinr',mj.within_r.toFixed(2)); set('s5-betweenr',mj.between_r.toFixed(2));
+    set('s5-slope',(Math.abs(mj.within_slope)*10).toFixed(1));
+    set('s5-bslope',(Math.abs(mb.within_slope)*10).toFixed(1));
+    const gp=WI.groups||{};
+    if(gp['Khulna belt']) set('s5-beltw',gp['Khulna belt'].jamaat.within_r.toFixed(2));
+    /* Recomputed after the gazette moved two additional constituencies into Jamaat's column:
+       927 unions across 58 eligible seats, electorate-weighted r = -0.438. */
+    set('s5-wonw','-0.44');
+    set('s5-tow','r = '+WI.minority.turnout.within_r.toFixed(2));
+  }
+  set('x-q4wg',sgn(G.by_minority.q4.jam_gap));
+  const unt=Lc.tiers.find(t=>t.tier.toLowerCase().includes('union'));
+  set('s6-ujam',unt?unt.jam_units.toLocaleString():'1,165');
+  set('s6-ubnp',unt?unt.bnp_units.toLocaleString():'3,091');
+  const upz=Lc.tiers.find(t=>t.tier.toLowerCase().includes('upazila'));
+  set('s6-upz',upz?upz.jam_pct+'%':'22%');
+  if(D.hijra&&D.hijra.hijra_voters) set('h3-n',D.hijra.hijra_voters.toLocaleString());
+  /* centre-level chapter */
+  if(CE){
+    set('ce-bnp',CE.leads.bnp_centres.toLocaleString());
+    set('ce-jam',CE.leads.jam_centres.toLocaleString());
+    set('ce-jampct',CE.leads.jam_centre_pct+'%');
+    set('ce-bnp70',CE.hist.bnp_over70+'%'); set('ce-jam70',CE.hist.jam_over70+'%');
+    set('ce-jam20',CE.hist.jam_under20+'%'); set('ce-bnp20',CE.hist.bnp_under20+'%');
+    set('ce-jamicc',CE.variance.jam.within_share.toFixed(0)+'%');
+    set('ce-bnpicc',CE.variance.bnp.within_share.toFixed(0)+'%');
+    set('ce-toicc',CE.variance.turnout.within_share.toFixed(0)+'%');
+    set('ce-spread',CE.within_seat.jam_median_spread);
+    set('ce-bspread',CE.within_seat.bnp_median_spread);
+    set('ce-over30',CE.within_seat.seats_over_30);
+    set('ce-jamnostand',(CE.contested.Jamaat.of-CE.contested.Jamaat.seats)+' seats');
+    set('ce-bnpnostand',(CE.contested.BNP.of-CE.contested.BNP.seats)+' seats');
+    set('ce-jamcpct',CE.leads.jam_centres_contested_pct+'%');
+    document.getElementById('ch2n').textContent=
+      `Each bar shows where differences among polling centres appeared. Party bars include `+
+      `only seats where that party ran. Jamaat skipped `+
+      `${CE.contested.Jamaat.of-CE.contested.Jamaat.seats} seats; counting those absences as `+
+      `zero support would distort the comparison.`;
+  }
+  set('m-ecoseats',N.seats_in_ecology);
+  document.getElementById('m-scope').innerHTML=
+    `The headline tally covers <b>297 declared seats</b>. The analytical result file contains `+
+    `42,382 centres across 297 constituencies. The roll export contains 292 constituencies; among the `+
+    `centre-result seats, ${N.roll_missing_ids.length} lack roll data and ${N.roll_excluded_mismatch} more are `+
+    `excluded where roll and register differ by over 15%, leaving <b>${N.seats_in_ecology} seats</b> in `+
+    `seat-level ecology correlations. Sex-specific figures cover 226 seats where single-sex centres hold `+
+    `at least 10% of registered voters.`;
+  document.getElementById('m-join').innerHTML=
+    `Roll files are keyed by Bengali constituency names with unstable spellings; results by constituency number. `+
+    `We built and checked the crosswalk name by name, routed roll rows by the district and upazila recorded `+
+    `<i>inside</i> each source PDF rather than trusting folder labels (several are mislabeled — one “Narail-4” `+
+    `folder contains Natore-4), and compared routed totals with the official register (r = 0.97). The age and `+
+    `community-classification exports cover the same 292 routed constituencies, but only the age layer is `+
+    `deduplicated; their headline denominators therefore differ.`;
+  document.getElementById('m-age').innerHTML=
+    `Date of birth is a field on the roll; ages are as of election day. “Too young in December 2008” means `+
+    `born in 1991 or later and says nothing about later voting history. The roll's 125,104,801 rows contain `+
+    `${(A.national.dedup_removed||0).toLocaleString()} duplicate registrations; age figures use the `+
+  `${(A.national.voters/1e6).toFixed(1)} million unique entries that remain. Community-composition figures `+
+    `instead use the raw-record layer, as disclosed above. `+
+    `${A.national.implausible.toLocaleString()} implausible birth years are excluded from bands; `+
+    `${A.national.bad_dob.toLocaleString()} dates were unparseable.`;
+}
+
+/* ============================================================ boot */
+function labelCharts(){
+  document.querySelectorAll('figure svg,.stagechart svg').forEach(svg=>{
+    const host=svg.closest('figure,.stagechart'),titleText=host?.querySelector('figcaption,.stitle')?.textContent?.trim()||'Data chart',
+      summary=host?.querySelector('.note')?.textContent?.replace(/\s+/g,' ').trim();
+    svg.setAttribute('role','img');svg.setAttribute('aria-label',titleText+(summary?'. '+summary:''));
+    if(!svg.querySelector(':scope > title')){const t=el('title',{});t.textContent=titleText;svg.insertBefore(t,svg.firstChild);}
+  });
+}
+const drawAll=()=>{c1();ch1();ch2();ch3();c2();c4();cAgeScale();cWomenPaired();cw();cq();c9();cCities();cLocalMargins();c10();labelCharts();};
+const CHARTSTATE={};
+Object.keys(CHARTVIEW).forEach(k=>{const f=CHARTVIEW[k];CHARTVIEW[k]=v=>{CHARTSTATE[k]=v;f(v);labelCharts();};});
+const redrawStageCharts=()=>Object.entries(CHARTSTATE).forEach(([k,v])=>CHARTVIEW[k](v));
+/* remember last view per map */
+Object.keys(MAPVIEW).forEach(k=>{ const f=MAPVIEW[k];
+  MAPVIEW[k]=v=>{ if(!MAPS[k])return; MAPS[k].lastView=v; f(v); }; });
+
+const json=u=>fetch(u).then(r=>{if(!r.ok)throw new Error(`${u}: HTTP ${r.status}`);return r.json();});
+const optional=u=>json(u).catch(()=>null);
+Promise.all([
+  json('data.json'),
+  json('crosses.json'),
+  json('constituencies.topojson'),
+  optional('centres.json'), optional('within.json'),
+]).then(([d,x,ct,ce,wi])=>{
+  D=d; X=x; CE=ce; WI=wi; SEATGJ=topojson.feature(ct,ct.objects.data);
+  applyOfficialResult();
+  fillText(); drawAll();
+  CHARTVIEW.s2('turnout');CHARTVIEW.s4('rej');labelCharts();
+  /* maps are progressive enhancement: a map hiccup must never blank the page */
+  try{
+    mkMap('map1','m1'); mkMap('map2','m2'); mkMap('map3','m3'); mkMap('map4','m4');
+    MAPVIEW.m1('winner'); MAPVIEW.m2('u35'); MAPVIEW.m3('nm');
+  }catch(e){ console.error('map init',e); }
+  initScrolly();
+  let boundaryPromise=null;
+  const loadBoundaryLayers=()=>{
+    if(boundaryPromise)return boundaryPromise;
+    boundaryPromise=Promise.all([optional('unit_layer.json'),json('units.topojson'),
+      json('upazilas.topojson')]).then(([ul,t2,t])=>{
+      UL=ul;UNITGJ=topojson.feature(t2,t2.objects.data);MAPS.m4.uz=topojson.feature(t,t.objects.data);
+      const faithView=MAPS.m3.lastView||'nm',localView=MAPS.m4.lastView||'union';
+      MAPVIEW.m3(faithView);MAPVIEW.m4(localView);
+      cCities();cLocalMargins();labelCharts();
+    }).catch(e=>console.error('boundary layers',e));
+    return boundaryPromise;
+  };
+  if('IntersectionObserver' in window){
+    const layerObserver=new IntersectionObserver(entries=>{
+      if(entries.some(e=>e.isIntersecting)){layerObserver.disconnect();loadBoundaryLayers();}
+    },{rootMargin:'160% 0px'});
+    layerObserver.observe(document.getElementById('scene-faith'));
+    layerObserver.observe(document.getElementById('scene-local'));
+  }else loadBoundaryLayers();
+}).catch(e=>{document.body.insertAdjacentHTML('afterbegin',
+  `<div role="alert" style="padding:20px;color:#b9590a">Could not load the election data: ${e.message||e}</div>`);});
+let resizeTimer=0;
+addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{
+  if(D){drawAll();redrawStageCharts();}
+},180);},{passive:true});
+</script>
+</body>
+</html>
