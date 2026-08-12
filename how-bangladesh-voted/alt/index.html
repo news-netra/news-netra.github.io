@@ -14,6 +14,8 @@
 </head>
 <body>
 
+<div class="readbar" aria-hidden="true"><span></span></div>
+
 <header class="masthead">
   <div class="masthead-inner">
     <a class="wordmark" href="#top">Netra News</a>
@@ -77,39 +79,56 @@
         <div class="fig-title" id="k5-title">Khulna-5, union by union</div>
         <div class="fig-sub" id="k5-sub">Who led each of the seat’s 18 unions</div>
       </div>
-      <div id="k5-map"></div>
+      <div class="legend legend--map">
+        <span><i style="background:#367b7f"></i>BNP</span>
+        <span><i style="background:#f28124"></i>Jamaat</span>
+        <span><i style="background:#7b5ea7"></i>Another party</span>
+      </div>
+      <div id="k5-map" class="scrolly-plot"></div>
     </div>
   </div>
   <div class="scrolly-steps">
-    <div class="step" data-view="lead">
+    <div class="step" data-view="national">
       <div class="step-card">
-        <span class="step-kicker">The seat</span>
-        The BNP won Khulna-5 by <b>3,311 votes</b> — and led just
-        <b>eight of its 18 unions</b>. Those eight held only 39 per cent of the
-        ballots cast in the seat.
+        <span class="step-kicker">The parliamentary map</span>
+        The BNP won <b>209 of 297</b> declared seats. From a distance, the
+        result looks close to uniform.
+      </div>
+    </div>
+    <div class="step" data-view="locate">
+      <div class="step-card">
+        <span class="step-kicker">One close seat</span>
+        Khulna-5, on the south-west coast, was decided by <b>3,311 votes</b> —
+        little more than one percentage point.
+      </div>
+    </div>
+    <div class="step" data-view="unions">
+      <div class="step-card">
+        <span class="step-kicker">Eighteen local verdicts</span>
+        Zoom in and the seat comes apart. Jamaat led <b>10</b> of its 18 unions.
+        The BNP led only eight — and won anyway.
       </div>
     </div>
     <div class="step" data-view="margin">
       <div class="step-card">
         <span class="step-kicker">The margins</span>
-        Colour by size of the lead and the imbalance appears. Jamaat’s wins were
-        broad but shallow. The BNP’s were concentrated — and deep.
+        Colour by the size of each lead and the imbalance appears. Jamaat’s wins
+        were broad but shallow. The BNP’s were concentrated — and deep.
       </div>
     </div>
     <div class="step" data-view="hindu">
       <div class="step-card">
         <span class="step-kicker">The composition</span>
-        Now shade by the estimated Hindu share of each union’s roll. Five unions
-        cross 50 per cent. They hold <b>21.9 per cent</b> of the seat’s
-        electorate — and they are the five deepest BNP margins on the map.
+        Five unions, marked <b>H</b>, have electorates where Hindu voters are
+        the majority. They hold <b>21.9 per cent</b> of the seat — and they are
+        the five deepest BNP margins on the map.
       </div>
     </div>
     <div class="step" data-view="decisive">
       <div class="step-card">
         <span class="step-kicker">The arithmetic</span>
-        Add the unions one at a time, largest BNP margin first. The running total
-        stays ahead only because those five arrive early. Strip them out and
-        Jamaat wins the seat by <b>18,898</b>.
+        Add the other 13 unions first and Jamaat leads by <b>18,898</b>. Add the
+        five marked H and the seat turns over to a BNP win of <b>3,311</b>.
       </div>
     </div>
   </div>
@@ -151,18 +170,23 @@
 <figure class="wide" id="fig-religion">
   <div class="fig-head">
     <div class="fig-title">The more Hindu the centre, the smaller Jamaat’s share</div>
-    <div class="fig-sub">Party share of the valid vote, by the estimated Hindu share of each polling centre’s electorate. Centres where both parties stood.</div>
+    <div class="fig-sub">Party share of the valid vote against the estimated Hindu share of each polling centre’s electorate, in equal five-point bands. The 26,787 centres where both parties stood.</div>
   </div>
   <div class="legend">
     <span><i class="round" style="background:#367b7f"></i>BNP</span>
     <span><i class="round" style="background:#f28124"></i>Jamaat</span>
+    <span><i class="round" style="background:#8a8f92"></i>Everyone else</span>
   </div>
   <div class="fig-scroll" id="religion-chart"></div>
   <figcaption>
-    <b>The gradient is almost unbroken.</b> Where fewer than one in 100 voters is
-    estimated Hindu, the two parties are nearly level. Above 50 per cent, the BNP
-    leads by more than 50 points. Shares describe <em>places</em>, not people:
-    they show how centres with these electorates voted, not how Hindu voters voted.
+    <b>The gap opens steadily, and it never closes.</b> Where almost no voters
+    are estimated Hindu the two parties sit about seven points apart; where
+    almost all of them are, the distance is more than sixty. Jamaat’s line falls
+    the whole way. The BNP’s dips at the very top not because Jamaat recovers
+    but because other candidates do: in the most Hindu-concentrated centres they
+    take almost 18 per cent, and above roughly 85 per cent they outpoll Jamaat.
+    Shares describe <em>places</em>, not people: they show how centres with these
+    electorates voted, not how Hindu voters voted.
   </figcaption>
 </figure>
 
@@ -226,15 +250,24 @@
 
 <figure class="wide" id="fig-turnout">
   <div class="fig-head">
-    <div class="fig-title">The election drew a much thinner public in the cities</div>
-    <div class="fig-sub">Ballots cast as a share of registered voters, in the polling-centre returns</div>
+    <div class="fig-title">Turnout thinned in the cities — and where the result was already settled</div>
+    <div class="fig-sub">Ballots cast as a share of registered voters, in the polling-centre returns. Seats are grouped into fifths by winning margin.</div>
+  </div>
+  <div class="legend">
+    <span><i style="background:#4c56a8"></i>Turnout</span>
+    <span><i style="background:#e0457b"></i>The thinnest in each panel</span>
   </div>
   <div class="fig-scroll" id="turnout-chart"></div>
   <figcaption>
-    <b>A 15-point gap between village and city.</b> The data cannot establish how
-    many missing urban voters were abstaining Awami League supporters. Migration,
-    outdated registration and weaker neighbourhood political networks may also
-    have kept city voters away.
+    <b>Fifteen points separate village from city, and five separate the closest
+    races from the most one-sided.</b> The colours here are deliberately not the
+    party colours used elsewhere in the piece: turnout is a rate, not a vote.
+    The eight seats decided by less than a
+    single point — a subset of the closest fifth, not a sixth group — turned out
+    at 64.1 per cent, the highest of any grouping here. The data cannot establish
+    how many missing urban voters were abstaining Awami League supporters;
+    migration, outdated registration and weaker neighbourhood political networks
+    may also have kept city voters away.
   </figcaption>
 </figure>
 
@@ -282,29 +315,45 @@
 
 <figure class="wide" id="fig-youth">
   <div class="fig-head">
-    <div class="fig-title">Where the young were most concentrated, Jamaat did better — but never enough</div>
-    <div class="fig-sub">Party share of the valid vote. Centres ranked into fifths <em>inside their own constituency</em> by the share of the roll too young to vote in 2008, so geography cannot drive the comparison. 36,153 centres in 284 seats.</div>
+    <div class="fig-title">Jamaat closed the gap as the electorate got younger — and closed it most in the cities</div>
+    <div class="fig-sub">The BNP’s lead over Jamaat, in points. Centres are ranked into fifths by the share of the roll too young to vote in 2008, <em>inside their own constituency and their own kind of place</em>, so neither geography nor the urban–rural divide can drive the comparison. 26,776 centres in the 210 seats where both parties stood.</div>
   </div>
   <div class="legend">
-    <span><i style="background:#367b7f"></i>BNP</span>
-    <span><i style="background:#f28124"></i>Jamaat</span>
+    <span><i style="background:#2c6b6f"></i>Big cities</span>
+    <span><i style="background:#5d9ba0"></i>Small towns</span>
+    <span><i style="background:#8ab5b8"></i>Villages</span>
   </div>
   <div class="fig-scroll" id="youth-chart"></div>
   <figcaption>
-    <b>The gradient runs the other way from the campus results.</b> The BNP did
-    best where younger voters were <em>least</em> concentrated, and its lead
-    narrows steadily — from 23.4 points in the oldest fifth of centres to 16.3
-    in the youngest. Jamaat gained ground as the electorate got younger, but
-    never enough to lead.
+    <b>Two things are happening at once.</b> Every line falls from left to right:
+    wherever young voters were concentrated, Jamaat did better. The BNP’s lead
+    narrows from 15.1 points to 7.1 across village centres, from 17.2 to 4.7
+    across town centres, and from 12.4 to 2.6 across big-city centres. And the
+    city line stays below the other two at every level of youth — the contest was
+    closer in the cities whether or not the young were concentrated there. Among
+    the youngest fifth of big-city centres the two parties finished 2.6 points
+    apart, the nearest thing in the national count to an echo of Shibir’s campus
+    results. But no line reaches level. Jamaat gained everywhere and led nowhere.
+    Read the city line as the firm one: its right-hand end holds between 2.6 and
+    3.2 points however the fifths are drawn, while the town line moves more
+    depending on the construction — it and the village line swap places in the
+    middle of the range.
   </figcaption>
 </figure>
 
 <div class="measure">
   <p>
-    The pattern is steady rather than dramatic. In the fifth of centres with the
-    fewest young voters, the BNP led Jamaat by 23.4 points. In the fifth with the
-    most, that lead fell to 16.3. Jamaat gained as the electorate got younger — but
-    it did not lead anywhere along the range.
+    The pattern is steady rather than dramatic. Across the 210 seats where both
+    parties stood, the BNP led Jamaat by 15.3 points in the fifth of centres with
+    the fewest young voters. In the fifth with the most, that lead fell to 6.9.
+    Jamaat gained as the electorate got younger — but it did not lead anywhere
+    along the range.
+  </p>
+  <p>
+    Where it came closest was in the cities. Shibir’s victories at public
+    universities were consistent with that: among the youngest fifth of big-city
+    centres, the BNP’s lead over Jamaat narrowed to <b>2.6 points</b>, against
+    <b>7.1</b> in the equivalent village centres.
   </p>
   <p class="pull">
     Shibir’s campus victories were real. They demonstrated the organisation’s
@@ -336,16 +385,26 @@
 
 <figure class="wide" id="fig-gap">
   <div class="fig-head">
-    <div class="fig-title">A men’s centre and a women’s centre, serving the same houses</div>
-    <div class="fig-sub">Turnout at each side of 3,834 exactly matched pairs. Each faint line is one pair; the heavy line is the average.</div>
+    <div class="fig-title">In four out of five neighbourhoods, fewer women voted than men</div>
+    <div class="fig-sub">Bangladesh’s polling centres are often single-sex. For 3,834 places we can compare a men’s centre and a women’s centre serving <em>exactly the same houses</em>. Each bar is the share of pairs where women’s turnout came out a given distance above or below the men’s. <b>Use the buttons to redraw the chart for places with more Hindu voters.</b></div>
   </div>
+  <div class="switch" id="gap-switch" role="group" aria-label="Filter the pairs by Hindu share of the roll"><span class="switch-label">Show</span></div>
   <div class="fig-scroll" id="gap-chart"></div>
   <figcaption>
-    <b>The deficit widens where Hindu voters are most concentrated</b> — about
-    four points in areas with few Hindu voters, and roughly 10 in areas
-    conservatively identified as Hindu-majority. The data locates the question;
-    it cannot answer it. Safety, distance, household timing, migration and
-    registration accuracy are all candidates.
+    <b>The whole distribution sits left of the line.</b> Women turned out less in
+    <b>81 per cent</b> of the 3,834 matched pairs, by <b>4.7 points</b> on average
+    — roughly <b>507,300</b> ballots. Switching the chart to places with more
+    Hindu voters slides the whole distribution left rather than merely moving its
+    average: women were behind in 78 per cent of pairs where almost no Hindu
+    voters live, and in <b>97 per cent</b> of the 68 pairs in Hindu-majority
+    areas, where the average gap reaches <b>10.2 points</b>. The obvious
+    objection — that these are simply low-turnout places — does not hold. Men’s
+    turnout barely moves across the four bands (59.9, 61.9, 62.5, 60.8 per cent);
+    women’s falls away (55.8, 57.4, 56.0, 50.7). Almost all of the widening is on
+    the women’s side of the pair. One pair in Sherpur-1 shows the scale: 62.6 per
+    cent of the men on the roll voted, and 44.8 per cent of the women. The data
+    locates the question; it cannot answer it. Safety, distance, household timing,
+    migration and registration accuracy are all candidates.
   </figcaption>
 </figure>
 
@@ -364,20 +423,66 @@
   </p>
 </div>
 
-<figure class="wide" id="fig-women">
-  <div class="fig-head">
-    <div class="fig-title">Jamaat gained among women everywhere except the big cities</div>
-    <div class="fig-sub">Party share of the valid vote at men-only and women-only centres, across the 220 constituencies where single-sex centres cover at least a tenth of the roll</div>
+<section class="scrolly scrolly--split" id="scrolly-women" aria-label="How Jamaat's result at women-only centres changed by geography">
+  <div class="scrolly-graphic">
+    <div class="scrolly-inner">
+      <div class="fig-head">
+        <div class="fig-title" id="wom-title">Jamaat gained among women — until the city limits</div>
+        <div class="fig-sub" id="wom-sub">Each bar runs from a party’s share at men-only centres to its share at women-only centres serving the same places</div>
+      </div>
+      <div class="fig-scroll scrolly-plot" id="women-chart"></div>
+      <div class="legend">
+        <span><i style="background:#367b7f"></i>BNP</span>
+        <span><i style="background:#f28124"></i>Jamaat</span>
+      </div>
+    </div>
   </div>
-  <div class="fig-scroll" id="women-chart"></div>
-  <figcaption>
-    <b>Geography reverses the pattern.</b> These are not a conventional survey of
-    men and women: single-sex centres are not evenly distributed, and cities hold
-    a disproportionate share of them. That makes the urban comparison the more
-    reliable one; the rural results, drawn from a smaller share of rural voters,
-    should be read more cautiously.
-  </figcaption>
-</figure>
+  <div class="scrolly-steps">
+    <div class="step" data-view="village">
+      <div class="step-card">
+        <span class="step-kicker">Villages</span>
+        In rural unions Jamaat rose from <b>31.4 per cent</b> of the vote at
+        men-only centres to <b>33.6</b> at women-only ones — 2.2 points, with the
+        BNP giving up a little ground.
+      </div>
+    </div>
+    <div class="step" data-view="town">
+      <div class="step-card">
+        <span class="step-kicker">Small towns</span>
+        Municipalities moved almost identically: <b>31.0 to 33.3</b>. Across two
+        very different kinds of place, the same 2-point drift toward Jamaat.
+      </div>
+    </div>
+    <div class="step" data-view="city">
+      <div class="step-card">
+        <span class="step-kicker">Big cities</span>
+        Then the direction reverses. Jamaat slipped from <b>31.1 to 30.6</b>, and
+        the BNP gained — 48.1 to <b>49.3</b>. This is the electorate the campaign’s
+        assumption actually described.
+      </div>
+    </div>
+    <div class="step" data-view="khulna">
+      <div class="step-card">
+        <span class="step-kicker">The south-west</span>
+        Across the 29 seats of Khulna division the two parties start from almost
+        the same place and pull apart. Jamaat runs from <b>45.7 per cent</b> at
+        men-only centres to <b>50.9</b> at women-only ones; the BNP runs the other
+        way, 45.6 down to <b>41.5</b>. It is the one row here where Jamaat’s share
+        among women finishes ahead of the BNP’s.
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="measure">
+  <p class="fig-note">
+    <b>A caution on what these centres are.</b> This is not a conventional survey
+    of men and women: single-sex centres are not evenly distributed, and cities
+    hold a disproportionate share of them. That makes the urban comparison the
+    more reliable one; the rural results, drawn from a smaller share of rural
+    voters, should be read more cautiously.
+  </p>
+</div>
 
 <div class="measure">
   <p>
@@ -440,6 +545,64 @@
   </p>
 </div>
 
+<section class="scrolly scrolly--split" id="scrolly-map" aria-label="The landslide broken into local verdicts">
+  <div class="scrolly-graphic">
+    <div class="scrolly-inner">
+      <div class="fig-head">
+        <div class="fig-title" id="map-title">The same election, by upazila</div>
+        <div class="fig-sub" id="map-sub">495 sub-districts. City corporations are held back — they sit outside the upazila system</div>
+      </div>
+      <div class="fig-scroll scrolly-plot" id="verdict-map"></div>
+    </div>
+  </div>
+  <div class="scrolly-steps">
+    <div class="step" data-view="upazila">
+      <div class="step-card">
+        <span class="step-kicker">495 upazilas</span>
+        Drop one level, to the sub-districts that actually run local
+        administration, and the block colours start to break up. Cities are held
+        back here: a city corporation is not part of any upazila.
+      </div>
+    </div>
+    <div class="step" data-view="city">
+      <div class="step-card">
+        <span class="step-kicker">12 city corporations</span>
+        Now the cities, each as a single unit. They are small on the map and
+        hold a tenth of the electorate — and they do not always agree with the
+        countryside around them.
+      </div>
+    </div>
+    <div class="step" data-view="urban">
+      <div class="step-card">
+        <span class="step-kicker">463 wards and 319 municipalities</span>
+        Break the cities into wards and pull out the municipal towns, and the
+        urban units stop voting as blocs. Neighbouring wards of the same city
+        return different winners.
+      </div>
+    </div>
+    <div class="step" data-view="union">
+      <div class="step-card">
+        <span class="step-kicker">5,321 local verdicts</span>
+        Finally the unions — the smallest tier of rural government. The single
+        national result is really <b>5,321 local ones</b>, and they disagree
+        constantly. Khulna-5, the seat this piece opened with, is one seat
+        assembled out of eighteen of these arguments.
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="measure">
+  <p class="fig-note">
+    <b>The blank spaces are real places.</b> Ten mapped units contain no polling
+    centre at all because nobody lives in them — chiefly the four Sundarbans
+    forest ranges, some 4,700 square kilometres of mangrove in the south-west,
+    plus two cantonments and a few river chars. They are shown in green rather
+    than left as holes in the map. A further 44 units sit in the three
+    constituencies where no result was declared.
+  </p>
+</div>
+
 <figure class="wide" id="fig-tiers">
   <div class="fig-head">
     <div class="fig-title">The landslide, redrawn as local government</div>
@@ -475,7 +638,10 @@
     leaders. In Badarganj, the rural unions gave Jamaat 53.8 per cent and the BNP
     31.9; inside the municipality, the BNP led by 50 per cent to 41.5. Bakshiganj
     produced the reverse: the BNP carried the surrounding unions, while Jamaat won
-    the municipality by 57 per cent to 39.4.
+    the municipality by 57 per cent to 39.4. These are the extremes rather than
+    the pattern: across all 306 comparisons the average town differs from its own
+    countryside by less than a point, and the 48 reversals run in both directions
+    at once.
   </p>
   <p>
     Such reversals reveal local fault lines that constituency results conceal. A
@@ -534,20 +700,6 @@
 </div>
 
 <!-- ===================================================== TABLE -->
-<figure class="wide" id="fig-table">
-  <div class="fig-head">
-    <div class="fig-title">Khulna-5, union by union</div>
-    <div class="fig-sub">Sorted by estimated Hindu share of the electorate</div>
-  </div>
-  <div class="table-wrap"><table id="k5-table"></table></div>
-  <figcaption>
-    <b>Coverage</b> is the share of each union’s electorate in centres that clear
-    the publication guard. Atlia’s composition rests on 44 per cent of its
-    electorate and should be read as approximate; every other union is at 87 per
-    cent or above.
-  </figcaption>
-</figure>
-
 <!-- ===================================================== METHODOLOGY -->
 <div class="measure">
   <details class="methodology">

@@ -260,10 +260,7 @@ figcaption b { color: var(--body); font-weight: 600; }
   color: var(--body);
 }
 .legend span { display: inline-flex; align-items: center; gap: 0.42rem; }
-.legend i {
-  width: 0.72rem; height: 0.72rem; flex: none;
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.14);
-}
+.legend i { width: 0.72rem; height: 0.72rem; flex: none; }
 .legend i.round { border-radius: 50%; }
 
 svg { display: block; width: 100%; height: auto; overflow: visible; }
@@ -297,7 +294,6 @@ svg { display: block; width: 100%; height: auto; overflow: visible; }
   max-width: 25rem;
   margin-left: clamp(1rem, 5vw, 4.5rem);
   background: var(--bg);
-  border: 1px solid var(--rule);
   padding: 1.35rem 1.5rem;
   font-size: 1rem;
   line-height: 1.55;
@@ -447,10 +443,131 @@ footer {
   body { font-size: 1.05rem; }
   .lede-para:first-letter { font-size: 3.4em; }
   figure.wide { padding-inline: 0; }
-  .fig-scroll { overflow-x: auto; }
-  .fig-scroll svg { min-width: 34rem; }
+  /* charts rebuild on a phone-sized viewBox below 560px, so there is nothing
+     left to scroll sideways to */
+  .fig-scroll { overflow-x: visible; }
+  .fig-scroll svg { min-width: 0; }
 }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { transition-duration: 0.001ms !important; animation-duration: 0.001ms !important; }
+}
+
+/* segmented control above a figure: redraws the chart for a subset.
+   The resting state carries a filled background rather than a hairline border —
+   an unfilled pill on white reads as a caption, not something you can press. */
+.switch {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .4rem;
+  margin: 0 0 .9rem;
+}
+.switch-label {
+  font-family: var(--sans);
+  font-size: .7rem;
+  font-weight: 600;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-right: .15rem;
+}
+.switch button {
+  font-family: var(--sans);
+  font-size: .82rem;
+  font-weight: 500;
+  color: var(--ink);
+  background: #e9e3dc;
+  border: 0;
+  border-radius: 999px;
+  padding: .38rem .82rem;
+  cursor: pointer;
+  transition: background .12s, color .12s;
+}
+.switch button:hover { background: #dcd4cb; }
+.switch button[aria-pressed="true"] {
+  background: #e0457b;
+  color: #fff;
+  font-weight: 600;
+}
+.switch button[aria-pressed="true"]:hover { background: #cf3a6e; }
+.switch button:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+/* a caveat note set below a figure, quieter than body copy */
+.fig-note {
+  font-family: var(--sans);
+  font-size: .88rem;
+  line-height: 1.55;
+  color: var(--muted);
+}
+.fig-note b { color: var(--ink); font-weight: 600; }
+
+/* A split scrollytell: cards hold the left column, the graphic takes the right,
+   so a card can never cover the panel it is describing. Below this width the
+   section falls back to the overlay behaviour shared with the other scrollytell. */
+@media (min-width: 1080px) {
+  .scrolly--split .scrolly-inner {
+    width: min(56rem, 62vw);
+    margin-left: auto;
+    margin-right: clamp(1rem, 3vw, 3rem);
+  }
+  .scrolly--split .step-card { max-width: 22rem; }
+}
+
+/* a legend sitting directly above a scrollytelling map */
+.legend--map { justify-content: center; margin-bottom: .5rem; }
+
+/* A pinned graphic has to fit the screen, not the column. The global rule
+   `svg { width: 100%; height: auto }` sizes a graphic from its width, which is
+   right for a figure in the flow of the article but wrong for a sticky one:
+   the verdict map is portrait, so at full column width it stands taller than
+   the viewport and its head scrolls off. Giving the plot a real height and
+   letting the SVG's own preserveAspectRatio letterbox inside it fixes every
+   scrollytelling graphic at once. */
+.scrolly-graphic .scrolly-inner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  padding-block: 1.1rem;
+}
+.scrolly-graphic .fig-head,
+.scrolly-graphic .legend { flex: none; }
+.scrolly-plot { flex: 1 1 auto; min-height: 0; }
+.scrolly-plot svg { width: 100%; height: 100%; }
+
+/* Reading progress. No navigation attached — just the bar. The fill is a
+   gradient rather than a flat colour because every flat colour on this page is
+   already spoken for: teal is the BNP and orange is Jamaat, so a solid bar
+   would read as one party's share of the article. Indigo through rose is the
+   non-party pair already used by the turnout and gap charts. The gradient is
+   sized to the viewport, not to the fill, so a given point on screen keeps its
+   colour as the bar grows past it instead of the ramp compressing. */
+.readbar {
+  position: fixed;
+  inset: 0 0 auto 0;
+  height: 3px;
+  z-index: 60;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 260ms ease;
+}
+.readbar.is-visible { opacity: 1; }
+.readbar span {
+  display: block;
+  width: 0;
+  height: 100%;
+  background: linear-gradient(90deg, #4c56a8 0%, #7d5aa0 38%, #c2497f 72%, #e0457b 100%);
+  background-size: 100vw 100%;
+  background-repeat: no-repeat;
+}
+@media print { .readbar { display: none; } }
+
+/* the smallest annotation on the page: which end of a range is which. Mono so
+   the two words carry the same optical weight, and a system stack so it costs
+   no webfont. */
+.micro {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 8.5px;
+  letter-spacing: .04em;
 }
