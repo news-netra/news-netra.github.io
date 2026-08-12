@@ -4,7 +4,7 @@
 
 import {
   openingMap, religionGradient, turnoutByPlace, youthQuintiles,
-  womenRanges, turnoutGapPairs, localTiers, localMap, isNarrow
+  womenRanges, turnoutGapPairs, localTiers, localMap, minorityRows, isNarrow
 } from './charts.js';
 
 // a restored scroll position lands the reader mid-scrollytell with the wrong
@@ -113,16 +113,20 @@ function initScrolly(section, views, captions, headings) {
   // Here a card takes over only once its own centre has risen past the reading
   // line, so the graphic can never lead the text. It measures the card, not the
   // wrapper, and it behaves the same scrolling up as down.
-  const READING_LINE = 0.62;
-  const centreOf = step => {
-    const box = (step.querySelector('.step-card') || step).getBoundingClientRect();
-    return box.top + box.height / 2;
-  };
+  // Trigger on the card's TOP edge, not its centre. A card is legible from the
+  // moment it clears the bottom of the screen; waiting for its centre to reach
+  // a line means the reader spends the whole approach reading the new words
+  // over the old picture — which reads as the text running a step ahead of the
+  // graphic. At 0.85 the graphic changes as the card finishes arriving, and the
+  // previous card is already off the top by then, so nothing switches under it.
+  const READING_LINE = 0.85;
+  const topOf = step =>
+    (step.querySelector('.step-card') || step).getBoundingClientRect().top;
   const pick = () => {
     const line = innerHeight * READING_LINE;
     let best = steps[0];
     for (const step of steps) {
-      if (centreOf(step) <= line) best = step;
+      if (topOf(step) <= line) best = step;
     }
     apply(best);
   };
@@ -136,11 +140,11 @@ function initScrolly(section, views, captions, headings) {
 async function main() {
   initReadbar();
   try {
-    const [national, k5, shapes, religion, turnout, youth, women, tiers, mapGeo, mapMeta] =
+    const [national, k5, shapes, religion, turnout, youth, women, tiers, mapGeo, mapMeta, minorities] =
       await Promise.all([
         load('national'), load('khulna5'), load('khulna5_shapes'), load('religion'),
         load('turnout'), load('youth'), load('women'), load('local_tiers'),
-        load('map_geo'), load('map_meta')
+        load('map_geo'), load('map_meta'), load('minorities')
       ]);
 
     const views = openingMap(document.querySelector('#k5-map'), national, shapes, k5);
@@ -148,13 +152,13 @@ async function main() {
       national: ['The parliamentary map', 'Winner of each of the 297 declared seats'],
       locate: ['One close seat', 'Khulna-5 was decided by 3,311 votes'],
       unions: ['Eighteen local verdicts', 'Who led each of Khulna-5’s 18 unions'],
-      margin: ['The size of each lead', 'Darker means a wider margin for the leading party'],
       hindu: ['Where Hindu voters are the majority', 'Shaded by the estimated Hindu share of each union’s roll'],
       decisive: ['The five unions that decided the seat', 'Adding the other 13 first, then the five marked H']
     }, ['#k5-title', '#k5-sub']);
 
     const $ = q => document.querySelector(q);
     responsive($('#religion-chart'), () => religionGradient($('#religion-chart'), religion));
+    responsive($('#minorities-chart'), () => minorityRows($('#minorities-chart'), minorities));
     responsive($('#turnout-chart'), () => turnoutByPlace($('#turnout-chart'), turnout));
     responsive($('#youth-chart'), () => youthQuintiles($('#youth-chart'), youth.quintiles, youth.byPlace));
     let gapView = 'all';
@@ -191,7 +195,9 @@ async function main() {
       localMap(document.querySelector('#verdict-map'), mapGeo, mapMeta),
       {
         upazila: ['The same election, by upazila', `${fmt(C.upazilas)} sub-districts. City corporations are held back — they sit outside the upazila system`],
-        city: ['The twelve city corporations', 'Each city as a single unit, coloured by its own count'],
+        city: ['The twelve city corporations', 'Each city as a single unit. The ring marks four of them'],
+        capital: ['Dhaka and its neighbours, up close', 'Four city corporations that are specks at national scale'],
+        wards: [`${fmt(C.wards)} city wards`, 'The same four cities, broken into the wards that elect their own councillors'],
         urban: ['Cities split into wards, towns pulled out', `${fmt(C.wards)} city wards and ${fmt(C.municipalities)} municipalities`],
         union: [`${fmt(C.verdicts)} local verdicts`, `${fmt(C.unions)} unions, ${fmt(C.municipalities)} municipalities and ${fmt(C.wards)} city wards`]
       },

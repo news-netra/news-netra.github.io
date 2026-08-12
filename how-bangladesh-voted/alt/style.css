@@ -479,7 +479,6 @@ footer {
   color: var(--ink);
   background: #e9e3dc;
   border: 0;
-  border-radius: 999px;
   padding: .38rem .82rem;
   cursor: pointer;
   transition: background .12s, color .12s;
@@ -571,3 +570,8 @@ footer {
   font-size: 8.5px;
   letter-spacing: .04em;
 }
+
+/* a step the reader should be able to sit with: the final mosaic carries 5,321
+   verdicts and scrolls past in one screen otherwise */
+.step--dwell { min-height: 180vh; align-items: flex-start; padding-top: 22vh; }
+@media (max-width: 900px) { .step--dwell { min-height: 150svh; } }

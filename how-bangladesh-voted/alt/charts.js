@@ -542,6 +542,10 @@ export function turnoutByPlace(host, data) {
    which is the age effect; the lines never touch, which is the place effect.
    =========================================================================== */
 export function youthQuintiles(host, quintiles, byPlace) {
+  /* Centres are ranked into fifths by how much of their roll was too young to
+     have voted in 2008, and the ranking is done separately inside each kind of
+     place. Every line falls, which is the age effect; the city line stays below
+     the other two, which is the place effect. */
   const n = isNarrow(host);
   // the three series names sit at the right end on desktop; on a phone that
   // margin is a third of the chart, so they move to a legend row on top
@@ -576,7 +580,7 @@ export function youthQuintiles(host, quintiles, byPlace) {
 
   const pairs = byPlace;
   for (const series of byPlace) {
-    const st = STYLE[series.label] || { colour: C.muted, width: 2.4, r: 4.2 };
+    const st = STYLE[series.label] || { colour: C.muted, width: 2.8, r: 4.4 };
     const pts = series.points;
     el('path', {
       d: pts.map((p, i) => `${i ? 'L' : 'M'}${cx(p.quintile)},${y(p.lead)}`).join(' '),
@@ -594,7 +598,6 @@ export function youthQuintiles(host, quintiles, byPlace) {
         ${fmt(p.centres)} centres · ${pct(p.youngShare)} of the roll too young for 2008`);
     }
 
-    // endpoints carry the numbers so the reader never has to hover
     // .value-label carries a fill in the stylesheet, which beats a presentation
     // attribute — these have to be set inline to inherit their line's colour
     const first = pts[0], last = pts[pts.length - 1];
@@ -1070,7 +1073,17 @@ export function localMap(host, geo, meta) {
     frag.append(node);
     return node;
   });
-  const plate = el('g', { 'shape-rendering': 'geometricPrecision' }, s);
+  // clip to the MAP AREA, not the whole canvas: when the map zooms it would
+  // otherwise flood the gutter the key and the tally live in
+  const clipId = `vmap-${Math.round(performance.now())}`;
+  el('rect', {
+    x: left - 2, y: PAD + (n ? 60 : 0) - 2, width: mapW + 4, height: mapH + 4
+  }, el('clipPath', { id: clipId }, el('defs', {}, s)));
+  const clipped = el('g', { 'clip-path': `url(#${clipId})` }, s);
+  const zoomable = el('g', {
+    style: 'transition: transform 1100ms cubic-bezier(.45,.02,.2,1)'
+  }, clipped);
+  const plate = el('g', { 'shape-rendering': 'geometricPrecision' }, zoomable);
   plate.append(frag);
 
   // Upazila and city outlines, drawn from the arcs the topology says separate
@@ -1088,8 +1101,9 @@ export function localMap(host, geo, meta) {
   }
   const borders = el('path', {
     d: edge, fill: 'none', stroke: C.white, 'stroke-width': 0.9,
-    'stroke-linejoin': 'round', 'stroke-linecap': 'round', 'pointer-events': 'none'
-  }, s);
+    'stroke-linejoin': 'round', 'stroke-linecap': 'round', 'pointer-events': 'none',
+    'vector-effect': 'non-scaling-stroke'
+  }, zoomable);
 
   // hover reads whichever tier is showing, so the tooltip never disagrees
   let tier = 'upazila';
@@ -1116,6 +1130,43 @@ export function localMap(host, geo, meta) {
     }
   });
   plate.addEventListener('mouseleave', hideTip);
+
+  /* ---- a magnifier on the capital's cities ------------------------------- */
+  /* Twelve city corporations hold a tenth of the electorate and perhaps a
+     hundredth of the map. At national scale the step that colours them and the
+     step that breaks them into wards look almost identical, so the reader is
+     asked to believe a change they cannot see. The ring marks where to look and
+     the next step goes there. */
+  const CAPITAL = ['Dhaka North City Corporation', 'Dhaka South City Corporation',
+    'Gazipur City Corporation', 'Narayanganj City Corporation'];
+  const capitalIdx = new Set(
+    meta.cities.map((c, i) => (CAPITAL.includes(c.name) ? i : -1)).filter(i => i >= 0)
+  );
+  let bx0 = Infinity, by0 = Infinity, bx1 = -Infinity, by1 = -Infinity;
+  nodes.forEach((node, i) => {
+    if (!capitalIdx.has(U.cc[i])) return;
+    const b = node.getBBox();
+    bx0 = Math.min(bx0, b.x); by0 = Math.min(by0, b.y);
+    bx1 = Math.max(bx1, b.x + b.width); by1 = Math.max(by1, b.y + b.height);
+  });
+  const ringX = (bx0 + bx1) / 2, ringY = (by0 + by1) / 2;
+  const ringR = Math.max(bx1 - bx0, by1 - by0) / 2 + 8;
+
+  const ring = el('g', { opacity: 0, style: 'transition: opacity 420ms ease' }, zoomable);
+  el('circle', {
+    cx: ringX, cy: ringY, r: ringR, fill: 'none', stroke: C.ink,
+    'stroke-width': 1.4, 'vector-effect': 'non-scaling-stroke'
+  }, ring);
+
+  // the zoom itself: fit that ring into the map area
+  // `k` upstream is the projection's cosine correction; this is the zoom factor
+  const zoomK = Math.min(mapW, mapH) / (ringR * 1.9);
+  const zoomTo = on => {
+    if (!on) { zoomable.setAttribute('transform', 'translate(0,0) scale(1)'); return; }
+    const cx = left + mapW / 2, cy = PAD + (n ? 70 : 0) + mapH / 2;
+    zoomable.setAttribute('transform',
+      `translate(${cx - zoomK * ringX},${cy - zoomK * ringY}) scale(${zoomK})`);
+  };
 
   /* ---- the Sundarbans, named rather than left as a hole ------------------ */
   const wildX = px(((89.42 - x0) / (x1 - x0)) * q);
@@ -1182,35 +1233,116 @@ export function localMap(host, geo, meta) {
   };
 
   const showBorders = width => borders.setAttribute('stroke-width', width);
+  const setRing = on => ring.setAttribute('opacity', on ? 1 : 0);
 
   return {
     upazila: () => {
       tier = 'upazila';
       paint(i => (blank(i) ? own(i) : U.uz[i] >= 0 ? FILL[meta.upazilas[U.uz[i]].w] : HOLD), () => false);
-      showBorders(1.1);
+      showBorders(1.1); setRing(false); zoomTo(false); wild.setAttribute('opacity', 1);
       setTally(meta.counts.upazilas, 'upazilas', 'cities held back');
     },
     city: () => {
       tier = 'city';
       paint(i => (blank(i) ? own(i) : U.cc[i] >= 0 ? FILL[meta.cities[U.cc[i]].w]
         : U.uz[i] >= 0 ? FILL[meta.upazilas[U.uz[i]].w] : own(i)), () => false);
-      showBorders(1.1);
+      showBorders(1.1); setRing(true); zoomTo(false); wild.setAttribute('opacity', 1);
       setTally(meta.counts.cities, 'city corporations', 'now shown separately');
     },
     urban: () => {
       tier = null;
       paint(i => (!blank(i) && U.t[i] === 0 && U.uz[i] >= 0
         ? FILL[meta.upazilas[U.uz[i]].w] : own(i)), i => U.t[i] !== 0);
-      showBorders(1.1);
+      showBorders(1.1); setRing(false); zoomTo(false); wild.setAttribute('opacity', 1);
       setTally(meta.counts.wards + meta.counts.municipalities, 'city wards and', 'municipalities');
+    },
+    // inside the ring: cities as whole units, close enough to be a place
+    capital: () => {
+      tier = 'city';
+      paint(i => (blank(i) ? own(i) : U.cc[i] >= 0 ? FILL[meta.cities[U.cc[i]].w]
+        : U.uz[i] >= 0 ? FILL[meta.upazilas[U.uz[i]].w] : own(i)), () => false);
+      showBorders(1.1); setRing(true); zoomTo(true); wild.setAttribute('opacity', 0);
+      setTally(4, 'cities around', 'the capital');
+    },
+    // the same frame, broken into wards: the change is now unmissable
+    wards: () => {
+      tier = null;
+      paint(i => (!blank(i) && U.t[i] === 0 && U.uz[i] >= 0
+        ? FILL[meta.upazilas[U.uz[i]].w] : own(i)), i => U.t[i] !== 0);
+      showBorders(1.1); setRing(true); zoomTo(true); wild.setAttribute('opacity', 0);
+      setTally(meta.counts.wards, 'city wards', 'across the twelve cities');
     },
     union: () => {
       tier = null;
       paint(own, () => true);
       // the units carry their own hairlines now, so the upazila skeleton only
       // needs to stay legible over the top of them
-      showBorders(0.8);
+      showBorders(0.8); setRing(false); zoomTo(false); wild.setAttribute('opacity', 1);
       setTally(meta.counts.verdicts, 'local verdicts', 'in one election');
     }
   };
+}
+
+/* ===========================================================================
+   8. WHOSE VOTE — the same measure across five kinds of centre.
+
+   The piece's argument turns on a sentence saying these electorates did not
+   move together, while every graphic before it shows only the Hindu half. One
+   stacked row per kind of centre makes the divergence structural rather than
+   asserted: the share sitting outside both major parties runs from 18 per cent
+   nationally to 83 in Chakma-majority centres, and the BNP's own share falls
+   from 69 to 14 between the two kinds of place a single word would have
+   lumped together.
+   =========================================================================== */
+export function minorityRows(host, data) {
+  const n = isNarrow(host);
+  const W = n ? 380 : 900, H = n ? 460 : 380;
+  const mL = n ? 8 : 250, mR = n ? 8 : 34, mT = n ? 34 : 40, mB = n ? 34 : 46;
+  const s = svg(host, W, H);
+  const iw = W - mL - mR, ih = H - mT - mB;
+  const rowH = ih / data.rows.length;
+  const OTHER = '#7b5ea7';
+
+  for (let v = 0; v <= 100; v += 25) {
+    const gx = mL + (v / 100) * iw;
+    el('line', { x1: gx, x2: gx, y1: mT - 8, y2: mT + ih, class: 'gridline' }, s);
+    el('text', { x: gx, y: mT + ih + 20, 'text-anchor': 'middle', class: 'tick-label' }, s)
+      .textContent = `${v}%`;
+  }
+
+  data.rows.forEach((r, i) => {
+    const top = mT + i * rowH + (n ? 26 : 0);
+    const bh = Math.min(30, rowH - (n ? 44 : 26));
+    const cy = top + bh / 2;
+    let acc = 0;
+    [['bnp', C.bnp, 'BNP'], ['jam', C.jam, 'Jamaat'], ['oth', OTHER, 'Everyone else']]
+      .forEach(([key, colour, name]) => {
+        const w = (r[key] / 100) * iw;
+        const seg = el('rect', { x: mL + acc, y: top, width: Math.max(w, 0.6), height: bh, fill: colour }, s);
+        hover(seg, `<b>${r.label} — ${name}</b><br>${pct(r[key])} of the valid vote<br>
+          ${fmt(r.centres)} centres · ${fmt(r.reg)} registered`);
+        if (w > 44) {
+          el('text', {
+            x: mL + acc + w / 2, y: cy + 4, 'text-anchor': 'middle',
+            class: 'value-label', fill: C.white
+          }, s).textContent = r[key].toFixed(1);
+        }
+        acc += w;
+      });
+
+    if (n) {
+      el('text', { x: mL, y: top - 14, class: 'cat-label', 'font-weight': 600, fill: C.ink }, s)
+        .textContent = r.label;
+      el('text', { x: mL + iw, y: top - 14, 'text-anchor': 'end', class: 'tick-label' }, s)
+        .textContent = `${fmt(r.centres)} centres`;
+    } else {
+      el('text', { x: mL - 14, y: cy - 2, 'text-anchor': 'end', class: 'cat-label', 'font-weight': 600, fill: C.ink }, s)
+        .textContent = r.label;
+      el('text', { x: mL - 14, y: cy + 13, 'text-anchor': 'end', class: 'tick-label' }, s)
+        .textContent = `${r.sub} · ${fmt(r.centres)} centres`;
+    }
+  });
+
+  el('text', { x: mL, y: mT - (n ? 22 : 20), class: 'tick-label', fill: C.muted }, s)
+    .textContent = 'Share of the valid vote →';
 }
