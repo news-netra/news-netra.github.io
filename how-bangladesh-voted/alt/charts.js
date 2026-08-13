@@ -61,7 +61,7 @@ const pct = (n, d = 1) => `${n.toFixed(d)}%`;
 
 /* ------------------------------------------------------------------ tooltip */
 let tipEl;
-export function showTip(event, html) {
+export function showTip(event, html, accent) {
   if (!tipEl) {
     tipEl = document.createElement('div');
     tipEl.className = 'tip';
@@ -77,6 +77,9 @@ export function showTip(event, html) {
   const host = (owner && owner.parentElement) || document.body;
   if (tipEl.parentElement !== host) host.appendChild(tipEl);
   tipEl.innerHTML = html;
+  // a rule down the left in the colour of the thing under the cursor, so the
+  // card is tied to the shape it describes rather than floating free of it
+  tipEl.style.setProperty('--tip-accent', accent || 'transparent');
   tipEl.style.opacity = '1';
   const pad = 14;
   const box = tipEl.getBoundingClientRect();
@@ -89,9 +92,9 @@ export function showTip(event, html) {
 }
 export const hideTip = () => { if (tipEl) tipEl.style.opacity = '0'; };
 
-export function hover(node, html) {
+export function hover(node, html, accent) {
   node.classList.add('hoverable');
-  const show = event => showTip(event, html);
+  const show = event => showTip(event, html, accent);
   node.addEventListener('mouseenter', show);
   node.addEventListener('mousemove', show);
   node.addEventListener('mouseleave', hideTip);
@@ -423,9 +426,11 @@ export function religionGradient(host, data) {
         cx: x(p.x), cy: y(p[key]), r: 3.2, fill: colour,
         stroke: C.white, 'stroke-width': 1.2
       }, s);
-      hover(dot, `<b>${p.lo}–${p.hi}% Hindu</b><br>
-        BNP ${pct(p.bnp)} · Jamaat ${pct(p.jam)} · everyone else ${pct(p.oth)}<br>
-        ${fmt(p.centres)} centres · ${fmt(p.reg)} registered`);
+      hover(dot, `<b>${p.lo}–${p.hi}% Hindu</b>`
+        + `<em>BNP ${pct(p.bnp)} · Jamaat ${pct(p.jam)}</em>`
+        + `<i>everyone else ${pct(p.oth)}</i>`
+        + `<i>${fmt(p.centres)} centres · ${fmt(p.reg)} registered</i>`,
+        p.bnp >= p.jam ? C.bnp : C.jam);
     }
     const last = pts[pts.length - 1];
     el('text', {
@@ -532,7 +537,7 @@ export function turnoutByPlace(host, data) {
         x: x(0), y: cy - bh / 2, width: Math.max(x(r[key]) - x(0), 1), height: bh,
         fill: isLowest ? BAR_LOW : BAR, opacity: isLowest ? 1 : 0.9
       }, s);
-      hover(bar, r.tip);
+      hover(bar, r.tip, isLowest ? BAR_LOW : BAR);
       el('text', {
         x: lx - 12, y: cy + (r.sub ? -1 : 4), 'text-anchor': 'end',
         class: 'cat-label', 'font-weight': 600, fill: C.ink
@@ -549,7 +554,8 @@ export function turnoutByPlace(host, data) {
 
   panel(x0, 'Where the polling centre was', data.byPlace.map(r => ({
     label: r.label, v: r.turnout,
-    tip: `<b>${r.label}</b><br>${pct(r.turnout)} turnout<br>${fmt(r.reg)} registered · ${fmt(r.centres)} centres`
+    tip: `<b>${r.label}</b><em>${pct(r.turnout)} turnout</em>`
+      + `<i>${fmt(r.reg)} registered · ${fmt(r.centres)} centres</i>`
   })), 'v');
 
   // Seats grouped by how close the race was. Labelling these "closest fifth"
@@ -559,7 +565,8 @@ export function turnoutByPlace(host, data) {
     label: n ? `Won by ${Math.round(r.medianMargin)} pts` : `Won by about ${Math.round(r.medianMargin)} points`,
     sub: `${r.seats} seats`,
     v: r.turnout,
-    tip: `<b>${r.seats} seats</b><br>typical winning margin ${r.medianMargin} points<br>turnout ${pct(r.turnout)}`
+    tip: `<b>${r.seats} seats</b><i>typical winning margin ${r.medianMargin} points</i>`
+      + `<em>turnout ${pct(r.turnout)}</em>`
   }));
   panel(n ? 330 : panelW, 'How close the race was', margin, 'v');
 }
@@ -622,9 +629,11 @@ export function youthQuintiles(host, quintiles, byPlace) {
         cx: cx(p.quintile), cy: y(p.lead), r: st.r,
         fill: st.colour, stroke: C.white, 'stroke-width': 1.5
       }, s);
-      hover(dot, `<b>${series.label}, quintile ${p.quintile} of 5</b><br>
-        BNP ${pct(p.bnp)} · Jamaat ${pct(p.jam)} — a lead of ${pct(p.lead)}<br>
-        ${fmt(p.centres)} centres · ${pct(p.youngShare)} of the roll too young for 2008`);
+      hover(dot, `<b>${series.label}</b><i>quintile ${p.quintile} of 5</i>`
+        + `<em>BNP lead ${pct(p.lead)}</em>`
+        + `<i>BNP ${pct(p.bnp)} · Jamaat ${pct(p.jam)}</i>`
+        + `<i>${fmt(p.centres)} centres · ${pct(p.youngShare)} too young for 2008</i>`,
+        st.colour);
     }
 
     // .value-label carries a fill in the stylesheet, which beats a presentation
@@ -749,8 +758,9 @@ export function womenRanges(host, panels) {
           style: `transition: transform 620ms ${EASE}`, transform: `translate(${x(a) - x(b)},0)`
         }, mark);
         const dot = el('circle', { cx: x(b), cy: ry, r: 5.6, fill: colour }, travel);
-        hover(mark, `<b>${p.label} — ${name}</b><br>men-only centres ${pct(a)}<br>
-          women-only centres ${pct(b)}<br>shift ${b - a > 0 ? '+' : ''}${(b - a).toFixed(1)} pts`);
+        hover(mark, `<b>${p.label}</b><i>${name}</i>`
+          + `<em>shift ${b - a > 0 ? '+' : ''}${(b - a).toFixed(1)} pts</em>`
+          + `<i>men-only ${pct(a)} · women-only ${pct(b)}</i>`, ink);
 
         const left = Math.min(a, b), right = Math.max(a, b);
         const lo = el('text', { x: x(left) - 11, y: ry + 4, 'text-anchor': 'end', class: 'value-label', style: `fill:${ink}` }, mark);
@@ -875,7 +885,9 @@ export function turnoutGapPairs(host, pairs, viewKey = 'all') {
     const side = b.x < 0
       ? `${Math.abs(b.x + step)}–${Math.abs(b.x)} points fewer women`
       : `${b.x}–${b.x + step} points more women`;
-    hover(bar, `<b>${fmt(b.n)} pair${b.n === 1 ? '' : 's'}</b> — ${pct(b.share)} of this group<br>${side}`);
+    hover(bar, `<b>${fmt(b.n)} pair${b.n === 1 ? '' : 's'}</b>`
+      + `<i>${pct(b.share)} of this group</i><em>${side}</em>`,
+      b.x < 0 ? LESS : MORE);
   }
 
   for (let v = lo; v <= hi; v += 4) {
@@ -973,9 +985,12 @@ export function localTiers(host, tiers, seats) {
           fill: l.party === 'Others' ? C.neutral : colour(l.party)
         }, s);
         const what = parliament ? 'won' : 'led';
-        hover(seg, `<b>${t.tier} — ${l.party}</b><br>${l.units !== null
-          ? `${what} ${fmt(l.units)} of ${fmt(t.total)}`
-          : `remaining ${parliament ? 'seats' : 'units'}`}<br>${pct(l.pct)}`);
+        hover(seg, `<b>${l.party}</b><i>${t.tier}</i>`
+          + `<em>${pct(l.pct)}</em>`
+          + `<i>${l.units !== null
+            ? `${what} ${fmt(l.units)} of ${fmt(t.total)}`
+            : `remaining ${parliament ? 'seats' : 'units'}`}</i>`,
+          l.party === 'Others' ? C.neutral : colour(l.party));
         if (w > (n ? 34 : 46)) {
           el('text', {
             x: mL + acc + w / 2, y: cy + bh / 2 + 4, 'text-anchor': 'middle',
@@ -1214,14 +1229,16 @@ export function localMap(host, geo, meta) {
     const t = TIERS[tier];
     const row = t && t.of[i] >= 0 ? t.rows[t.of[i]] : null;
     if (row) {
-      showTip(event, `<b>${row.name}</b><br>${row.sub} · ${fmt(row.units)} units<br>
-        ${meta.parties[row.w]}${row.w < 8 ? ` by ${pct(row.mg)}` : ''}<br>
-        ${fmt(row.reg)} voters${row.to ? ` · turnout ${pct(row.to)}` : ''}`);
+      showTip(event, `<b>${row.name}</b><i>${row.sub} · ${fmt(row.units)} units</i>`
+        + `<em>${meta.parties[row.w]}${row.w < 8 ? ` by ${pct(row.mg)}` : ''}</em>`
+        + `<i>${fmt(row.reg)} voters${row.to ? ` · turnout ${pct(row.to)}` : ''}</i>`,
+        FILL[row.w]);
     } else {
       const w = U.w[i];
-      showTip(event, `<b>${U.n[i]}</b><br>${U.d[i]} · ${TYPE[U.t[i]]}<br>
-        ${meta.parties[w]}${w < 8 ? ` by ${pct(U.mg[i])}` : ''}<br>
-        ${fmt(U.tv[i])} voters${U.to[i] ? ` · turnout ${pct(U.to[i])}` : ''}`);
+      showTip(event, `<b>${U.n[i]}</b><i>${U.d[i]} · ${TYPE[U.t[i]]}</i>`
+        + `<em>${meta.parties[w]}${w < 8 ? ` by ${pct(U.mg[i])}` : ''}</em>`
+        + `<i>${fmt(U.tv[i])} voters${U.to[i] ? ` · turnout ${pct(U.to[i])}` : ''}</i>`,
+        FILL[w]);
     }
   });
   plate.addEventListener('mouseleave', hideTip);
@@ -1592,8 +1609,9 @@ export function minorityRows(host, data) {
       .forEach(([key, colour, name]) => {
         const w = (r[key] / 100) * iw;
         const seg = el('rect', { x: mL + acc, y: top, width: Math.max(w, 0.6), height: bh, fill: colour }, s);
-        hover(seg, `<b>${r.label} — ${name}</b><br>${pct(r[key])} of the valid vote<br>
-          ${fmt(r.centres)} centres · ${fmt(r.reg)} registered`);
+        hover(seg, `<b>${r.label}</b><i>${name}</i>`
+          + `<em>${pct(r[key])} of the valid vote</em>`
+          + `<i>${fmt(r.centres)} centres · ${fmt(r.reg)} registered</i>`, colour);
         if (w > 44) {
           el('text', {
             x: mL + acc + w / 2, y: cy + 4, 'text-anchor': 'middle',

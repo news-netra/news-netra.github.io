@@ -362,17 +362,44 @@ svg { display: block; width: 100%; height: auto; overflow: visible; }
   z-index: 60;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.1s;
-  background: var(--ink);
-  color: #fff;
+  transition: opacity 0.12s ease;
+  /* Not flat black: a warm near-ink that sits in the page's own palette, and
+     just translucent enough that the shape underneath still reads through it.
+     The left rule takes the colour of whatever is under the cursor. */
+  background: rgba(24, 21, 17, 0.94);
+  backdrop-filter: blur(3px);
+  border-left: 3px solid var(--tip-accent, transparent);
+  color: #efece6;
+  padding: 0.5rem 0.72rem 0.55rem;
+  max-width: 15rem;
   font-family: var(--sans);
   font-size: 0.7rem;
-  line-height: 1.35;
-  padding: 0.38rem 0.5rem;
-  max-width: 13rem;
+  line-height: 1.45;
   font-variant-numeric: tabular-nums;
 }
-.tip b { color: #fff; }
+/* The name of the thing, and then everything the chart knows about it, in
+   three descending weights: what it is, what happened there, how big it is. */
+.tip b {
+  display: block;
+  font-size: 0.86rem;
+  font-weight: 600;
+  line-height: 1.25;
+  color: #fff;
+  margin-bottom: 0.12rem;
+}
+.tip i {
+  display: block;
+  font-style: normal;
+  font-size: 0.66rem;
+  color: #a9a29b;
+}
+.tip em {
+  display: block;
+  font-style: normal;
+  font-weight: 600;
+  color: #fff;
+  margin-top: 0.22rem;
+}
 .hoverable { cursor: pointer; transition: opacity 0.12s; }
 .hoverable:hover { opacity: 0.78; }
 
