@@ -77,9 +77,6 @@ export function showTip(event, html, accent) {
   const host = (owner && owner.parentElement) || document.body;
   if (tipEl.parentElement !== host) host.appendChild(tipEl);
   tipEl.innerHTML = html;
-  // a rule down the left in the colour of the thing under the cursor, so the
-  // card is tied to the shape it describes rather than floating free of it
-  tipEl.style.setProperty('--tip-accent', accent || 'transparent');
   tipEl.style.opacity = '1';
   const pad = 14;
   const box = tipEl.getBoundingClientRect();

@@ -357,50 +357,57 @@ svg { display: block; width: 100%; height: auto; overflow: visible; }
 }
 
 /* ------------------------------------------------------------------ hoverable */
+/* The hover card. It is appended into whatever page the charts happen to be
+   rendered in, so it cannot rely on specificity: the host's own "i, em {
+   font-style: italic }" and a bare "b { color: ink }" both reach inside it and
+   won, which is how the name ended up near-black on a near-black ground and the
+   lead line in italic serif. The few properties that carry the design are
+   therefore declared !important — the standard escape hatch for a widget that
+   has to survive CSS it has never seen. */
 .tip {
   position: fixed;
   z-index: 60;
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.12s ease;
-  /* Not flat black: a warm near-ink that sits in the page's own palette, and
-     just translucent enough that the shape underneath still reads through it.
-     The left rule takes the colour of whatever is under the cursor. */
-  background: rgba(24, 21, 17, 0.94);
+  background: rgba(24, 21, 17, 0.95) !important;
   backdrop-filter: blur(3px);
-  border-left: 3px solid var(--tip-accent, transparent);
-  color: #efece6;
-  padding: 0.5rem 0.72rem 0.55rem;
-  max-width: 15rem;
-  font-family: var(--sans);
-  font-size: 0.7rem;
-  line-height: 1.45;
+  color: #efece6 !important;
+  padding: 0.7rem 0.9rem !important;
+  max-width: 16rem;
+  font-family: var(--tip-face, ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace) !important;
+  font-size: 0.68rem !important;
+  font-style: normal !important;
+  line-height: 1.5;
   font-variant-numeric: tabular-nums;
 }
-/* The name of the thing, and then everything the chart knows about it, in
-   three descending weights: what it is, what happened there, how big it is. */
+/* what it is, then what happened there, then how big it is */
 .tip b {
   display: block;
-  font-size: 0.86rem;
-  font-weight: 600;
-  line-height: 1.25;
-  color: #fff;
-  margin-bottom: 0.12rem;
+  font-family: var(--tip-face, ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace) !important;
+  font-size: 0.82rem !important;
+  font-weight: 700 !important;
+  font-style: normal !important;
+  line-height: 1.3;
+  color: #ffffff !important;
+  margin-bottom: 0.25rem;
 }
-/* Classes, not <i>/<em>: an element selector here loses to the host page's own
-   "i, em { font-style: italic }" and to the article's #hbv em, and the card
-   came out in italic body serif. */
 .tip .t-sub {
   display: block;
-  font-size: 0.66rem;
-  color: #a9a29b;
+  font-size: 0.68rem !important;
+  font-weight: 400 !important;
+  font-style: normal !important;
+  color: #a49d95 !important;
 }
 .tip .t-lead {
   display: block;
-  font-weight: 600;
-  color: #fff;
-  margin-top: 0.22rem;
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+  font-style: normal !important;
+  color: #ffffff !important;
+  margin-top: 0.4rem;
 }
+.tip .t-lead + .t-sub { margin-top: 0.1rem; }
 .hoverable { cursor: pointer; transition: opacity 0.12s; }
 .hoverable:hover { opacity: 0.78; }
 
