@@ -1348,12 +1348,20 @@ export function localMap(host, geo, meta) {
   const back = el('g', { opacity: 0, style: 'transition: opacity 260ms ease', class: 'cityhit' }, s);
   // Solid ink rather than a pale wash: this is the only way back out of a
   // zoomed city, and at 11px on #efebe7 it read as a caption, not a control.
-  const backX = n ? gx - 150 : 0;
-  el('rect', { x: backX, y: gy + 26, width: 150, height: 28, fill: C.ink }, back);
-  el('text', {
-    x: backX + 12, y: gy + 45, class: 'tick-label', fill: C.white,
-    style: 'font-weight:600'
-  }, back).textContent = '← Back to the whole country';
+  const backLabel = '← Back to the country';
+  const backPlate = el('rect', { y: gy + 26, height: 28, fill: C.ink }, back);
+  const backText = el('text', {
+    y: gy + 45, class: 'tick-label', fill: C.white, style: 'font-weight:600'
+  }, back);
+  backText.textContent = backLabel;
+  /* The plate is cut to the label rather than guessed at: at a fixed width the
+     text ran past its own background and slid under the map. Measured after the
+     text is in the DOM, which is the only point the font metrics are known. */
+  const backW = Math.ceil(backText.getComputedTextLength()) + 24;
+  const backX = n ? gx - backW : 0;
+  backPlate.setAttribute('x', backX);
+  backPlate.setAttribute('width', backW);
+  backText.setAttribute('x', backX + 12);
   back.addEventListener('click', closeCity);
 
   /* ---- the Sundarbans, named rather than left as a hole ------------------ */
