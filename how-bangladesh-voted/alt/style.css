@@ -287,30 +287,27 @@ svg { display: block; width: 100%; height: auto; overflow: visible; }
 }
 .scrolly-inner { width: min(var(--wide), 94vw); margin-inline: auto; }
 .scrolly-steps { position: relative; pointer-events: none; }
-.step { min-height: 88vh; display: flex; align-items: center; }
+.step { min-height: 88vh; display: flex; align-items: center; justify-content: center; }
 .step:last-child { min-height: 96vh; }
+/* Centred over the graphic rather than beside it. That only works because the
+   panel is translucent: the map keeps reading through the card, so the reader
+   is not asked to choose between the words and the picture. */
 .step-card {
   pointer-events: auto;
-  max-width: 25rem;
-  margin-left: clamp(1rem, 5vw, 4.5rem);
-  background: var(--bg);
-  padding: 1.35rem 1.5rem;
+  max-width: 27rem;
+  margin-inline: auto;
+  background: rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(2px);
+  border: 1px solid var(--rule);
+  border-radius: 0;
+  padding: 1.15rem 1.4rem;
   font-size: 1rem;
   line-height: 1.55;
   color: var(--body);
+  text-align: center;
   transition: opacity 0.3s ease, transform 0.3s ease;
 }
-.step-card .step-kicker {
-  display: block;
-  font-family: var(--sans);
-  font-size: 0.62rem;
-  font-weight: 700;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 0.6rem;
-}
-.scrolly.is-ready .step:not(.is-active) .step-card { opacity: 0.32; transform: translateY(8px); }
+.step-card .scrolly.is-ready .step:not(.is-active) .step-card { opacity: 0.32; transform: translateY(8px); }
 
 /* ------------------------------------------------------------------ hoverable */
 .tip {
@@ -505,12 +502,12 @@ footer {
    so a card can never cover the panel it is describing. Below this width the
    section falls back to the overlay behaviour shared with the other scrollytell. */
 @media (min-width: 1080px) {
+  /* the graphic stays centred on the screen; the card sits over it rather
+     than beside it, which is what the translucent panel below is for */
   .scrolly--split .scrolly-inner {
-    width: min(56rem, 62vw);
-    margin-left: auto;
-    margin-right: clamp(1rem, 3vw, 3rem);
+    width: min(56rem, 82vw);
+    margin-inline: auto;
   }
-  .scrolly--split .step-card { max-width: 22rem; }
 }
 
 /* a legend sitting directly above a scrollytelling map */
