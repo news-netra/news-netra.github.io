@@ -919,19 +919,84 @@ export function turnoutGapPairs(host, pairs, viewKey = 'all') {
 /* ===========================================================================
    6. THE LOCAL TIERS — stacked shares of leadership, tier by tier.
    =========================================================================== */
-export function localTiers(host, tiers) {
+export function localTiers(host, tiers, national) {
   const n = isNarrow(host);
   // the tier name moves above its own bar rather than beside it, and the
   // right-hand annotation column goes
-  const W = n ? 380 : 900, H = n ? 400 : 330;
-  const mL = n ? 6 : 116, mR = n ? 6 : 128, mT = n ? 26 : 26, mB = n ? 40 : 44;
+  const W = n ? 380 : 900, H = n ? 430 : 372;
+  const mL = n ? 6 : 124, mR = n ? 6 : 128, mT = n ? 26 : 26, mB = n ? 22 : 31;
   const s = svg(host, W, H);
-  const iw = W - mL - mR, ih = H - mT - mB;
+  el('desc', {}, s).textContent =
+    'Two measures on one 0 to 100 per cent scale. A reference bar shows each '
+    + "party's share of the 73.5 million votes cast: BNP 50 per cent, Jamaat 32, "
+    + 'independents 6, NCP 3, every other party 9. Below it, four bars show the '
+    + 'share of local units where each party finished first — unions, '
+    + 'municipalities, city wards and upazilas — where the BNP led between 67 '
+    + 'and 73 per cent and Jamaat between 21 and 23.';
+  // A reference band sits above the tiers: the national vote share, drawn to the
+  // same scale so the widths can be compared, but measuring something else
+  // entirely. Everything below the rule counts UNITS LED, one unit one count,
+  // whatever its size; the band counts VOTES.
+  const BAR_H = 34;
+  const bandY = mT + (n ? 18 : 0);
+  const ruleY = bandY + BAR_H + (n ? 14 : 16);
+  const tierTop = ruleY + (n ? 26 : 28);
+  const iw = W - mL - mR, ih = H - tierTop - mB;
   const rowH = ih / tiers.length;
   const colour = party => partyFill(party);
 
+  /* ---- the reference band ------------------------------------------------ */
+  // Same order as the tier rows, forced rather than sorted, so every segment
+  // boundary can be read straight down the column.
+  let nationalBnpX = null;
+  let lastBarBottom = 0;
+  if (national) {
+    let acc = 0;
+    [...national.shares, { party: 'Other', ...national.rest }].forEach(l => {
+      const w = (l.pct / 100) * iw;
+      const seg = el('rect', {
+        x: mL + acc, y: bandY, width: Math.max(w - 0.8, 0.8), height: BAR_H,
+        fill: colour(l.party)
+      }, s);
+      hover(seg, `<b>National vote — ${
+        l.party === 'Other' ? 'every other party' : l.party}</b><br>${
+        fmt(l.votes)} votes<br>${pct(l.pct)} of all votes cast`);
+      if (w > (n ? 30 : 46)) {
+        el('text', {
+          x: mL + acc + w / 2, y: bandY + BAR_H / 2 + 4, 'text-anchor': 'middle',
+          class: 'value-label', fill: C.white
+        }, s).textContent = `${l.pct.toFixed(0)}%`;
+      }
+      acc += w;
+      if (l.party === 'BNP') nationalBnpX = mL + acc;
+    });
+
+    const votes = `${(national.validVotes / 1e6).toFixed(1)}m votes cast`;
+    if (n) {
+      el('text', { x: mL, y: bandY - 8, class: 'cat-label', 'font-weight': 600, fill: C.ink }, s)
+        .textContent = 'National vote share';
+      el('text', { x: mL + iw, y: bandY - 8, 'text-anchor': 'end', class: 'tick-label' }, s)
+        .textContent = votes;
+    } else {
+      el('text', {
+        x: mL - 12, y: bandY + BAR_H / 2 + 5, 'text-anchor': 'end',
+        class: 'cat-label', 'font-weight': 600, fill: C.ink
+      }, s).textContent = 'National vote share';
+      el('text', { x: mL - 12, y: bandY + BAR_H / 2 + 19, 'text-anchor': 'end', class: 'tick-label' }, s)
+        .textContent = votes;
+    }
+
+    el('line', {
+      x1: mL, x2: mL + iw, y1: ruleY, y2: ruleY, stroke: C.rule, 'stroke-width': 1
+    }, s);
+    // the one line a reader must cross to get from the band to the tiers, and
+    // it contains the negation
+    el('text', { x: mL, y: ruleY + (n ? 17 : 18), class: 'tick-label' }, s)
+      .textContent = 'Below: units led, not votes';
+  }
+
   tiers.forEach((t, i) => {
-    const cy = mT + i * rowH + (n ? 22 : 8);
+    const cy = tierTop + i * rowH + (n ? 22 : 8);
     const bh = Math.min(34, rowH - (n ? 40 : 22));
     let acc = 0;
     const shown = t.leaders.filter(l => l.pct >= 0.4);
@@ -969,7 +1034,26 @@ export function localTiers(host, tiers) {
       el('text', { x: mL + iw + 14, y: cy + bh / 2 + 13, class: 'tick-label' }, s)
         .textContent = `within 5 pts`;
     }
+    lastBarBottom = cy + bh;
   });
+
+  /* ---- the one line that carries the argument ---------------------------- */
+  // Dropped from the reference band's BNP edge straight through every tier, in
+  // the same vocabulary the turnout chart already uses for a national rate. The
+  // gap between this line and the end of each teal block IS the amplification:
+  // half the votes, two-thirds of the map. Only BNP gets a line — Jamaat's
+  // block floats off a moving left edge, so a second line at 81.7% would land
+  // exactly on the Municipalities "21%" label and compare nothing.
+  if (nationalBnpX !== null) {
+    el('line', {
+      x1: nationalBnpX, x2: nationalBnpX, y1: bandY + BAR_H, y2: lastBarBottom + 6,
+      stroke: C.ink, 'stroke-width': 1.25, 'stroke-dasharray': '4 3', opacity: 0.5
+    }, s);
+    el('text', {
+      x: nationalBnpX, y: lastBarBottom + 20, 'text-anchor': 'middle',
+      class: 'tick-label', fill: C.ink
+    }, s).textContent = n ? 'BNP national vote share' : "BNP's share of the national vote";
+  }
 }
 
 /* ===========================================================================

@@ -268,7 +268,7 @@ async function main() {
       },
       ['#wom-title', '#wom-sub']
     );
-    responsive($('#tiers-chart'), () => localTiers($('#tiers-chart'), tiers));
+    responsive($('#tiers-chart'), () => localTiers($('#tiers-chart'), tiers.tiers, tiers.national));
 
     const C = mapMeta.counts;
     const mapViews = localMap($('#verdict-map'), mapGeo, mapMeta);
