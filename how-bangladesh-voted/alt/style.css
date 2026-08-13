@@ -229,7 +229,9 @@ a { color: var(--bnp-ink); text-decoration-thickness: 1px; text-underline-offset
 /* ------------------------------------------------------------------- figures */
 figure { margin: 3.25rem auto; }
 figure.wide { max-width: var(--wide); }
-.fig-head { max-width: 46rem; margin-inline: auto; text-align: center; margin-bottom: 0.9rem; }
+/* Everything a chart says in words is ranged left — title, deck, key and
+   caption — so the eye starts at the same edge in every figure. */
+.fig-head { max-width: 46rem; text-align: left; margin-bottom: 0.9rem; }
 .fig-title {
   font-family: var(--sans);
   font-size: 1rem;
@@ -252,7 +254,8 @@ figcaption {
   line-height: 1.55;
   color: var(--muted);
   max-width: 44rem;
-  margin: 1rem auto 0;
+  margin: 1rem 0 0;
+  text-align: left;
   padding-top: 0.7rem;
   border-top: 1px solid var(--grid);
 }
@@ -261,7 +264,7 @@ figcaption b { color: var(--body); font-weight: 600; }
 .legend {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 0.4rem 1.15rem;
   margin: 0.75rem 0 1.1rem;
   font-family: var(--sans);
@@ -551,7 +554,7 @@ footer {
 }
 
 /* a legend sitting directly above a scrollytelling map */
-.legend--map { justify-content: center; margin-bottom: .5rem; }
+.legend--map { margin-bottom: .5rem; }
 
 /* A pinned graphic has to fit the screen, not the column. The global rule
    `svg { width: 100%; height: auto }` sizes a graphic from its width, which is
