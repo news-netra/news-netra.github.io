@@ -65,8 +65,17 @@ export function showTip(event, html) {
   if (!tipEl) {
     tipEl = document.createElement('div');
     tipEl.className = 'tip';
-    document.body.appendChild(tipEl);
   }
+  /* Parented to the chart rather than to <body>. The palette is declared as
+     custom properties on the page root, and on a standalone page <body> is
+     inside that scope — but embed this article in a page it does not own and it
+     is not: var(--ink) resolves to nothing, the card loses its background, and
+     white text lands straight on the map. Hanging the tip off the chart keeps
+     it inside the scope that defines the colours. It stays position:fixed, so
+     it is still measured against the viewport, not against its parent. */
+  const owner = event.target.closest && event.target.closest('svg');
+  const host = (owner && owner.parentElement) || document.body;
+  if (tipEl.parentElement !== host) host.appendChild(tipEl);
   tipEl.innerHTML = html;
   tipEl.style.opacity = '1';
   const pad = 14;
