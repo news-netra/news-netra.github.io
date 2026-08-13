@@ -296,10 +296,11 @@ svg { display: block; width: 100%; height: auto; overflow: visible; }
   pointer-events: auto;
   max-width: 27rem;
   margin-inline: auto;
-  background: rgba(255, 255, 255, 0.86);
+  /* No edge, so the card has to hold itself off the graphic on background
+     alone. 0.94 rather than 0.86 also keeps the party colours below legible
+     where a card passes over a filled shape rather than white. */
+  background: rgba(255, 255, 255, 0.94);
   backdrop-filter: blur(2px);
-  border: 1px solid var(--rule);
-  border-radius: 0;
   padding: 1.15rem 1.4rem;
   font-size: 1rem;
   line-height: 1.55;
@@ -308,6 +309,36 @@ svg { display: block; width: 100%; height: auto; overflow: visible; }
   transition: opacity 0.3s ease, transform 0.3s ease;
 }
 .step-card .scrolly.is-ready .step:not(.is-active) .step-card { opacity: 0.32; transform: translateY(8px); }
+
+/* Party names in the scrollytelling cards carry the colour that stands for them
+   on the graphic beside the text — the same trick the results table uses at
+   .lead-bnp. Always the -ink variants: Jamaat's fill orange is 2.6:1 on white
+   and unreadable as type, where --jam-ink is 4.7. */
+.party-bnp { color: var(--bnp-ink); font-weight: 600; }
+.party-jam { color: var(--jam-ink); font-weight: 600; }
+.party-ind { color: #b03a48; font-weight: 600; }
+.party-ncp { color: var(--other-ink); font-weight: 600; }
+
+/* The badge the Khulna-5 map drops on Hindu-majority unions, small enough to
+   set inline: white disc, purple rule, bold sans H. A radius is the shape here,
+   not a decoration on a box. */
+.hbadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.68em;
+  height: 1.68em;
+  border-radius: 50%;
+  border: 1.5px solid var(--other-ink);
+  background: var(--bg);
+  color: var(--other-ink);
+  font-family: var(--sans);
+  font-size: 0.74em;
+  font-weight: 700;
+  line-height: 1;
+  vertical-align: 0.1em;
+  margin-inline: 0.1em;
+}
 
 /* ------------------------------------------------------------------ hoverable */
 .tip {
