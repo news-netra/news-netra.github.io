@@ -1093,7 +1093,10 @@ export function localMap(host, geo, meta) {
   const q = geo.quant;
   // equirectangular with a cosine correction at the country's mid-latitude
   const k = Math.cos(((y0 + y1) / 2) * Math.PI / 180);
-  const mapH = H - PAD * 2 - (n ? 96 : 0);
+  /* Narrow reserves two bands out of H: 70 above for the tally, and enough
+     below for the four legend rows, which begin at H - 76. At the old 96 the
+     map ran 54px underneath them. */
+  const mapH = H - PAD * 2 - (n ? 84 : 0);
   // the country's own width at this height — what the projection draws into
   const natW = mapH * ((x1 - x0) * k) / (y1 - y0);
   /* Bangladesh is taller than it is wide, so a frame cut to the country leaves
@@ -1101,10 +1104,12 @@ export function localMap(host, geo, meta) {
      rest of the district off both edges. The map AREA is therefore wider than
      the country, which costs a little height at national scale and buys back
      far more context at every zoom. The country stays centred in it. */
-  const mapW = n ? natW : natW * 1.18;
+  // 1.30 on a phone, where the box is squarer still and the country was
+  // letterboxing a quarter of the width away
+  const mapW = natW * (n ? 1.30 : 1.18);
   const W = GUTTER + mapW + RIGHT;
   const s = svg(host, Math.round(W), H);
-  const left = GUTTER + (n ? (W - GUTTER - PAD - mapW) / 2 : (mapW - natW) / 2);
+  const left = GUTTER + (mapW - natW) / 2;   // country centred in its area
   const px = gx => left + (gx / q) * natW;
   const py = gy => PAD + (n ? 70 : 0) + mapH - (gy / q) * mapH;
 
@@ -1401,7 +1406,9 @@ export function localMap(host, geo, meta) {
   const KEYS = [['BNP', PARTY.BNP], ['Jamaat', PARTY.Jamaat],
     ['Independent', PARTY.Independent], ['NCP', PARTY.NCP], ['Another party', PARTY.Other],
     ['Not yet broken out', HOLD], ['No result declared', NONE], ['No resident voters', WILD]];
-  KEYS.forEach(([label, colour], i) => {
+  // On a phone the key is written in HTML above the map: down here it sits in
+  // the band the step cards travel through and is covered at every step.
+  (n ? [] : KEYS).forEach(([label, colour], i) => {
     // two columns beneath the map on a phone, one column beside it otherwise
     const lx = n ? (i % 2) * 186 : 0;
     const ly = n ? H - 76 + Math.floor(i / 2) * 20 : 168 + i * 22;

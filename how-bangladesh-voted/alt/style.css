@@ -477,8 +477,13 @@ footer {
 /* -------------------------------------------------------------- responsive */
 @media (max-width: 900px) {
   .method-body { columns: 1; }
-  .scrolly-graphic { height: 62svh; justify-content: flex-start; padding-top: 1rem; }
-  .step { min-height: 84svh; align-items: flex-end; padding-bottom: 6svh; }
+  /* A phone has width to spare and no height to waste: the graphics were
+     height-bound in a 62svh box and letterboxing a third of their own width
+     away. Taller box, and the 3vw gutter comes off so a map can run edge to
+     edge — the cards still pass below it. */
+  .scrolly-graphic { height: 78svh; justify-content: flex-start; padding-top: 0.6rem; }
+  .scrolly-graphic .scrolly-inner { width: 100vw; padding-inline: 0; }
+  .step { min-height: 84svh; align-items: flex-end; padding-bottom: 4svh; }
   .step-card { max-width: none; margin-inline: 0.75rem; font-size: 0.95rem; }
   .scrolly-steps { padding-top: 8svh; }
 }
@@ -549,6 +554,13 @@ footer {
 
 /* a legend sitting directly above a scrollytelling map */
 .legend--map { margin-bottom: .5rem; }
+/* the verdict map keeps its key in the SVG gutter on a wide screen; this one
+   is the phone's, where there is no gutter to put it in */
+.legend--narrowonly { display: none; }
+@media (max-width: 900px) {
+  .legend--narrowonly { display: flex; gap: .25rem .7rem; font-size: .68rem; padding-inline: .6rem; }
+  .legend--narrowonly i { width: .6rem; height: .6rem; }
+}
 
 /* A pinned graphic has to fit the screen, not the column. The global rule
    `svg { width: 100%; height: auto }` sizes a graphic from its width, which is
@@ -622,6 +634,7 @@ footer {
    it wants a pause rather than a room to wander in. Sized to leave about one
    screen of map after the card has gone, against the big map's one and a half. */
 #scrolly-khulna .step--dwell { --dwell: 230vh; --dwell-narrow: 225svh; }
+#scrolly-women .step--dwell { --dwell: 230vh; --dwell-narrow: 225svh; }
 
 /* the city rings on the final map: something to open, not decoration */
 .cityhit { cursor: pointer; }
