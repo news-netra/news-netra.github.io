@@ -496,6 +496,23 @@ footer {
   .fig-scroll { overflow-x: visible; }
   .fig-scroll svg { min-width: 0; }
 }
+
+/* On a phone the drawing takes the whole width and the words do not. Dropping
+   the figure's padding let a chart run edge to edge, but it took the title,
+   deck, key and caption with it, and a headline hard against the screen edge
+   reads as a mistake. The padding moves onto the text instead — the same
+   1.5rem the prose column uses, so a chart title lines up with the paragraph
+   above it. This covers both the standing figures and the pinned graphics,
+   whose inner wrapper goes full-bleed for the same reason. */
+@media (max-width: 900px) {
+  .fig-head,
+  figure.wide > .legend,
+  .scrolly-graphic .legend,
+  .scrolly-graphic .fig-head,
+  figcaption { padding-inline: 1.5rem; }
+  /* the map's own key is already inset by its narrow rule */
+  .legend--narrowonly { padding-inline: 1.5rem; }
+}
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { transition-duration: 0.001ms !important; animation-duration: 0.001ms !important; }
