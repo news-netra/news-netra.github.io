@@ -15,6 +15,18 @@ export const C = {
   ink: '#16130f', body: '#35302a', muted: '#77706a', white: '#ffffff'
 };
 
+/* One palette for every graphic in the piece. The BNP and Jamaat get their own
+   colours because the argument is about them; Independent and the NCP get their
+   own because they are the third and fourth forces — 219 and 86 local units,
+   10 and 6 seats — and because the hill result is an independent story. Every
+   other party shares one neutral: Khelafat is in there deliberately, since two
+   organisations carry that name and the crosswalk cannot separate them. */
+export const PARTY = {
+  BNP: C.bnp, Jamaat: C.jam, Independent: '#8a8f92', NCP: '#7b5ea7',
+  Other: '#bdb6ae'
+};
+export const partyFill = name => PARTY[name] || PARTY.Other;
+
 export const el = (name, attrs = {}, parent = null) => {
   const node = document.createElementNS(NS, name);
   for (const [k, v] of Object.entries(attrs)) {
@@ -101,11 +113,7 @@ export function openingMap(host, national, shapes, data) {
     ring.map(([x, y], i) => `${i ? 'L' : 'M'}${px(x).toFixed(1)},${py(y).toFixed(1)}`).join('') + 'Z'
   ).join('')).join('');
 
-  const PARTY = {
-    BNP: C.bnp, Jamaat: C.jam, Independent: C.indep, NCP: C.other,
-    Khelafat: '#a8761f', IAB: '#326891', GOP: '#8a8f92',
-    BJP: '#8a8f92', Ganasamhati: '#8a8f92', Jamiat: '#a8761f'
-  };
+
 
   /* --- layers --- */
   const clipId = `map-clip-${Math.round(performance.now())}`;
@@ -121,7 +129,7 @@ export function openingMap(host, national, shapes, data) {
   const seatPaths = new Map();
   for (const seat of national.seats) {
     const p = el('path', {
-      d: toPath(seat.polys), fill: seat.party ? PARTY[seat.party] || C.neutral : C.neutral,
+      d: toPath(seat.polys), fill: seat.party ? partyFill(seat.party) : C.neutral,
       stroke: C.white, 'stroke-width': 0.5, 'vector-effect': 'non-scaling-stroke'
     }, natG);
     seatPaths.set(seat.cid, p);
@@ -410,7 +418,9 @@ export function religionGradient(host, data) {
       y: n ? mT - 18 : y(last[key]) + 4, class: 'series-label', fill: colour
     }, s).textContent = label;
   };
-  line('oth', C.indep, n ? 'Others' : 'Everyone else', 2.2);
+  // "everyone else" is the shared neutral in both charts that use the phrase;
+  // C.indep now means Independent specifically
+  line('oth', PARTY.Other, n ? 'Others' : 'Everyone else', 2.2);
   line('jam', C.jam, 'Jamaat');
   line('bnp', C.bnp, 'BNP');
 
@@ -912,10 +922,7 @@ export function localTiers(host, tiers) {
   const s = svg(host, W, H);
   const iw = W - mL - mR, ih = H - mT - mB;
   const rowH = ih / tiers.length;
-  const colour = party => ({
-    BNP: C.bnp, Jamaat: C.jam, Independent: C.indep, NCP: C.other,
-    KM: '#a8761f', IAB: '#326891', GOP: '#8a8f92', Jamiat: '#a8761f'
-  }[party] || C.neutral);
+  const colour = party => partyFill(party);
 
   tiers.forEach((t, i) => {
     const cy = mT + i * rowH + (n ? 22 : 8);
@@ -1064,7 +1071,10 @@ export function localMap(host, geo, meta) {
   const NONE = '#d9d4cf';       // result not declared
   const WILD = '#c3d0be';       // no resident voters: forest, cantonment
   const HOLD = '#e7e2dc';       // a tier that has not been broken out yet
-  const FILL = [C.bnp, C.jam, '#7d6ba7', '#7d6ba7', '#7d6ba7', '#7d6ba7', '#7d6ba7', NONE, WILD];
+  // index matches meta.parties: BNP, Jamaat, Independent, NCP, IAB, KM, GOP,
+  // Other, no result, no resident voters
+  const FILL = [PARTY.BNP, PARTY.Jamaat, PARTY.Independent, PARTY.NCP,
+    PARTY.Other, PARTY.Other, PARTY.Other, PARTY.Other, NONE, WILD];
   const HAIR = 'rgba(255,255,255,.6)';
 
   const frag = document.createDocumentFragment();
@@ -1121,12 +1131,12 @@ export function localMap(host, geo, meta) {
     const row = t && t.of[i] >= 0 ? t.rows[t.of[i]] : null;
     if (row) {
       showTip(event, `<b>${row.name}</b><br>${row.sub} · ${fmt(row.units)} units<br>
-        ${meta.parties[row.w]}${row.w < 7 ? ` by ${pct(row.mg)}` : ''}<br>
+        ${meta.parties[row.w]}${row.w < 8 ? ` by ${pct(row.mg)}` : ''}<br>
         ${fmt(row.reg)} voters${row.to ? ` · turnout ${pct(row.to)}` : ''}`);
     } else {
       const w = U.w[i];
       showTip(event, `<b>${U.n[i]}</b><br>${U.d[i]} · ${TYPE[U.t[i]]}<br>
-        ${meta.parties[w]}${w < 7 ? ` by ${pct(U.mg[i])}` : ''}<br>
+        ${meta.parties[w]}${w < 8 ? ` by ${pct(U.mg[i])}` : ''}<br>
         ${fmt(U.tv[i])} voters${U.to[i] ? ` · turnout ${pct(U.to[i])}` : ''}`);
     }
   });
@@ -1286,7 +1296,8 @@ export function localMap(host, geo, meta) {
   }
 
   const legend = el('g', {}, s);
-  const KEYS = [['BNP', C.bnp], ['Jamaat', C.jam], ['Another party', '#7d6ba7'],
+  const KEYS = [['BNP', PARTY.BNP], ['Jamaat', PARTY.Jamaat],
+    ['Independent', PARTY.Independent], ['NCP', PARTY.NCP], ['Another party', PARTY.Other],
     ['Not yet broken out', HOLD], ['No result declared', NONE], ['No resident voters', WILD]];
   KEYS.forEach(([label, colour], i) => {
     // two columns beneath the map on a phone, one column beside it otherwise
@@ -1308,7 +1319,7 @@ export function localMap(host, geo, meta) {
   // A forest with no voters does not acquire a verdict by being inside an
   // upazila that has one. Units with no result of their own keep their own
   // colour at every tier, so the Sundarbans never gets painted as if it voted.
-  const blank = i => U.w[i] >= 7;
+  const blank = i => U.w[i] >= 8;
 
   const setTally = (n, what, more) => {
     tally.textContent = fmt(n);
@@ -1344,7 +1355,7 @@ export function localMap(host, geo, meta) {
     label.textContent = U.n[i];
     const w = U.w[i];
     sub.textContent = `${U.d[i]} · ${TYPE[U.t[i]]} · ${meta.parties[w]}`
-      + (w < 7 ? ` by ${pct(U.mg[i])}` : '');
+      + (w < 8 ? ` by ${pct(U.mg[i])}` : '');
   };
   const setRing = on => ring.setAttribute('opacity', on ? 1 : 0);
   const setCities = on => {
@@ -1425,7 +1436,7 @@ export function minorityRows(host, data) {
   const s = svg(host, W, H);
   const iw = W - mL - mR, ih = H - mT - mB;
   const rowH = ih / data.rows.length;
-  const OTHER = '#7b5ea7';
+  const OTHER = PARTY.Other;
 
   for (let v = 0; v <= 100; v += 25) {
     const gx = mL + (v / 100) * iw;
