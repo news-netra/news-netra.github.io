@@ -198,7 +198,7 @@ async function main() {
         city: ['The twelve city corporations', 'Each city as a single unit. The ring marks four of them'],
         capital: ['Dhaka and its neighbours, up close', 'Four city corporations that are specks at national scale'],
         wards: [`${fmt(C.wards)} city wards`, 'The same four cities, broken into the wards that elect their own councillors'],
-        urban: ['Cities split into wards, towns pulled out', `${fmt(C.wards)} city wards and ${fmt(C.municipalities)} municipalities`],
+        urban: ['And the municipal towns beside them', `${fmt(C.wards)} city wards and ${fmt(C.municipalities)} municipalities, still inside the ring`],
         union: [`${fmt(C.verdicts)} local verdicts`, `${fmt(C.unions)} unions, ${fmt(C.municipalities)} municipalities and ${fmt(C.wards)} city wards`]
       },
       ['#map-title', '#map-sub']

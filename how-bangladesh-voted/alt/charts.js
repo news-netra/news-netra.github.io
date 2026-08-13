@@ -1253,8 +1253,11 @@ export function localMap(host, geo, meta) {
       tier = null;
       paint(i => (!blank(i) && U.t[i] === 0 && U.uz[i] >= 0
         ? FILL[meta.upazilas[U.uz[i]].w] : own(i)), i => U.t[i] !== 0);
-      showBorders(1.1); setRing(false); zoomTo(false); wild.setAttribute('opacity', 1);
-      setTally(meta.counts.wards + meta.counts.municipalities, 'city wards and', 'municipalities');
+      // stay inside the ring: the municipal towns pulled out here are as small
+      // on the national map as the cities were, and pulling back now would hide
+      // them the same way
+      showBorders(1.1); setRing(true); zoomTo(true); wild.setAttribute('opacity', 0);
+      setTally(meta.counts.wards + meta.counts.municipalities, 'city wards and', 'municipalities in all');
     },
     // inside the ring: cities as whole units, close enough to be a place
     capital: () => {
