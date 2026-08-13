@@ -212,7 +212,6 @@ strong, b { font-weight: 700; color: var(--ink); }
 em { font-style: italic; }
 a { color: var(--bnp-ink); text-decoration-thickness: 1px; text-underline-offset: 2px; }
 
-
 /* ------------------------------------------------------------------- figures */
 figure { margin: 3.25rem auto; }
 figure.wide { max-width: var(--wide); }
@@ -521,15 +520,6 @@ footer {
 }
 .switch button[aria-pressed="true"]:hover { background: #cf3a6e; }
 .switch button:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
-
-/* a caveat note set below a figure, quieter than body copy */
-.fig-note {
-  font-family: var(--sans);
-  font-size: .88rem;
-  line-height: 1.55;
-  color: var(--muted);
-}
-.fig-note b { color: var(--ink); font-weight: 600; }
 
 /* A split scrollytell: cards hold the left column, the graphic takes the right,
    so a card can never cover the panel it is describing. Below this width the
