@@ -297,7 +297,7 @@ async function main() {
         urban: ['And the municipal towns beside them', `${fmt(C.wards)} city wards and ${fmt(C.municipalities)} municipalities, still inside the ring`],
         union: [`${fmt(C.verdicts)} local verdicts`, `${fmt(C.unions)} unions, ${fmt(C.municipalities)} municipalities and ${fmt(C.wards)} city wards`]
       },
-      ['#map-title', '#map-sub']
+      null
     );
 
   } catch (error) {
