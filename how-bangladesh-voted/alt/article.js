@@ -11,8 +11,13 @@ import {
 // frame showing, so the page always opens at the top
 if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
 
+/* Resolved against this module's own URL rather than the page's, so the same
+   files drive the standalone page and a copy of the article embedded on another
+   origin — where a relative `data/…` would resolve against the host domain. */
+const DATA = new URL('data/', import.meta.url);
+
 const load = name =>
-  fetch(`data/${name}.json`, { cache: 'no-store' }).then(r => {
+  fetch(new URL(`${name}.json`, DATA), { cache: 'no-store' }).then(r => {
     if (!r.ok) throw new Error(`${name}: HTTP ${r.status}`);
     return r.json();
   });
