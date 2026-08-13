@@ -613,8 +613,18 @@ footer {
 /* The dwell step is also the last step, and `.step:last-child` outranks a bare
    class — hence `.step.step--dwell`. The card sits near the top so it clears the
    screen early, leaving the rest of the run as map with nothing over it. */
-.step.step--dwell { min-height: 300vh; align-items: flex-start; padding-top: 16vh; }
-@media (max-width: 900px) { .step.step--dwell { min-height: 240svh; padding-bottom: 0; } }
+.step.step--dwell {
+  min-height: var(--dwell, 300vh);
+  align-items: flex-start;
+  padding-top: 16vh;
+}
+@media (max-width: 900px) {
+  .step.step--dwell { min-height: var(--dwell-narrow, 240svh); padding-bottom: 0; }
+}
+/* Khulna-5 is 18 unions and a waterfall, not 5,321 units and a search box, so
+   it wants a pause rather than a room to wander in. Sized to leave about one
+   screen of map after the card has gone, against the big map's one and a half. */
+#scrolly-khulna .step--dwell { --dwell: 230vh; --dwell-narrow: 225svh; }
 
 /* the city rings on the final map: something to open, not decoration */
 .cityhit { cursor: pointer; }
