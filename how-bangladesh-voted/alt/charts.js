@@ -502,7 +502,11 @@ export function turnoutByPlace(host, data) {
     const lx = n ? mL : ox + mL;
     const rowH = ih / rows.length;
 
-    el('text', { x: lx, y: y0 - 20, class: 'series-label', fill: C.ink }, s)
+    /* The panel's name and the national marker used to share a line, 3px apart,
+       which is fine while the panel is half a screen wide and fails the moment
+       it is not: on a phone "Where the polling centre was" runs straight into
+       "national 60.2%". The name lifts clear of it there. */
+    el('text', { x: lx, y: y0 - (n ? 32 : 20), class: 'series-label', fill: C.ink }, s)
       .textContent = title;
 
     for (let v = 0; v <= 70; v += (n ? 20 : 10)) {
