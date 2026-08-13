@@ -212,19 +212,6 @@ strong, b { font-weight: 700; color: var(--ink); }
 em { font-style: italic; }
 a { color: var(--bnp-ink); text-decoration-thickness: 1px; text-underline-offset: 2px; }
 
-.pull {
-  font-family: var(--display);
-  font-variation-settings: "SOFT" 0, "WONK" 1, "opsz" 60;
-  font-weight: 600;
-  font-size: clamp(1.35rem, 2.6vw, 1.7rem);
-  line-height: 1.28;
-  color: var(--ink);
-  border-top: 2px solid var(--ink);
-  border-bottom: 1px solid var(--rule);
-  padding: 1.35rem 0;
-  margin: 2.75rem 0;
-  text-wrap: balance;
-}
 
 /* ------------------------------------------------------------------- figures */
 figure { margin: 3.25rem auto; }
@@ -637,7 +624,6 @@ footer {
 .cityhit circle[stroke] { transition: stroke-width 140ms ease; }
 .cityhit:hover circle[stroke], .cityhit:focus-visible circle[stroke] { stroke-width: 2.6; }
 .cityhit:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
-
 
 /* Look up one unit in the mosaic. Shown only on the final step, where the map
    stops being a narrative and becomes something to search. */
