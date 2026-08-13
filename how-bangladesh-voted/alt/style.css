@@ -152,8 +152,17 @@ h1 {
   padding: 1rem;
 }
 .illo--section { aspect-ratio: 21 / 9; margin: 3rem auto 2.5rem; }
-.illo img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.illo:has(img) { border: 0; background: none; padding: 0; }
+.illo img { width: 100%; height: auto; display: block; }
+/* A placeholder is a fixed letterbox; a real illustration keeps its own shape.
+   These are drawn on white and sit in the page rather than on it, so cropping
+   one to the placeholder's ratio would cut the drawing rather than frame it. */
+.illo:has(img) {
+  border: 0;
+  background: none;
+  padding: 0;
+  aspect-ratio: auto;
+  max-width: 44rem;
+}
 
 /* --------------------------------------------------------------------- prose */
 p { margin-bottom: 1.35rem; text-wrap: pretty; }
