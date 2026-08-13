@@ -16,11 +16,74 @@ if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
    origin — where a relative `data/…` would resolve against the host domain. */
 const DATA = new URL('data/', import.meta.url);
 
-const load = name =>
-  fetch(new URL(`${name}.json`, DATA), { cache: 'no-store' }).then(r => {
+/* The data can be served two ways. Open, straight off the same host as this
+   module — which is what happens if the page says nothing. Or through the gate
+   (see ../data-gate), when the page declares one:
+
+     window.HBV_GATE = { base: 'https://netra.news/hbv', siteKey: '0x4A…' };
+
+   The gate wants a short-lived key, which costs one Turnstile challenge and one
+   round trip before the first chart can draw. Everything below is arranged so
+   that failing to get one is not fatal on its own: the request still goes out,
+   and the gate decides whether to answer it. That keeps the article legible for
+   readers whose browser cannot reach challenges.cloudflare.com while still
+   letting the gate refuse a scraper. */
+const GATE = typeof window !== 'undefined' ? window.HBV_GATE : null;
+
+const script = src => new Promise((ok, fail) => {
+  const el = document.createElement('script');
+  el.src = src; el.async = true;
+  el.onload = ok; el.onerror = () => fail(new Error('blocked'));
+  document.head.append(el);
+});
+
+/* Resolves to a challenge response, or to null if Turnstile cannot be reached
+   or does not answer promptly. Never rejects: a blocked challenge should not
+   take the article down with it. */
+function challenge(siteKey) {
+  if (!siteKey) return Promise.resolve(null);
+  const ready = script('https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit')
+    .then(() => new Promise(done => {
+      const box = document.createElement('div');
+      box.style.cssText = 'position:absolute;left:-9999px;top:0';
+      document.body.append(box);
+      window.turnstile.render(box, {
+        sitekey: siteKey, size: 'invisible',
+        callback: done, 'error-callback': () => done(null),
+      });
+    }))
+    .catch(() => null);
+  // a challenge that never comes back must not hold the page open
+  return Promise.race([ready, new Promise(r => setTimeout(() => r(null), 6000))]);
+}
+
+let keyPromise = null;
+function sessionKey() {
+  if (!GATE) return Promise.resolve(null);
+  if (!keyPromise) {
+    keyPromise = challenge(GATE.siteKey)
+      .then(turnstile => fetch(`${GATE.base}/session`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ turnstile }),
+      }))
+      .then(r => (r.ok ? r.json() : null))
+      .then(d => (d && d.token) || null)
+      .catch(() => null);
+  }
+  return keyPromise;
+}
+
+const load = name => sessionKey().then(key => {
+  const url = GATE ? `${GATE.base}/data/${name}.json` : new URL(`${name}.json`, DATA);
+  return fetch(url, {
+    cache: 'no-store',
+    headers: key ? { Authorization: `Bearer ${key}` } : {},
+  }).then(r => {
     if (!r.ok) throw new Error(`${name}: HTTP ${r.status}`);
     return r.json();
   });
+});
 
 const fmt = n => n.toLocaleString('en-US');
 
