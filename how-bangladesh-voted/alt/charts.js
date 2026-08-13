@@ -22,9 +22,15 @@ export const C = {
    other party shares one neutral: Khelafat is in there deliberately, since two
    organisations carry that name and the crosswalk cannot separate them. */
 export const PARTY = {
-  BNP: C.bnp, Jamaat: C.jam, Independent: '#8a8f92', NCP: '#7b5ea7',
-  Other: '#bdb6ae'
+  BNP: C.bnp, Jamaat: C.jam, Independent: '#b03a48', NCP: '#7b5ea7',
+  Other: '#6d7b3a'
 };
+/* Independent and the residual were a grey and a warm neutral: 17 apart from
+   each other in CIELAB, and the residual only 11 from "no result declared" —
+   close enough that a reader could not tell a party from a place that did not
+   vote. Crimson and olive are the pair with the largest MINIMUM distance to
+   everything else on the map, including the three pale tones that mean no
+   election happened: nothing here is closer than 42. */
 export const partyFill = name => PARTY[name] || PARTY.Other;
 
 export const el = (name, attrs = {}, parent = null) => {
