@@ -1013,13 +1013,14 @@ export function localMap(host, geo, meta) {
   // the 152-unit key column is a third of a phone screen, so on narrow the map
   // takes the full width and the key sits beneath it
   const GUTTER = n ? 0 : 152, PAD = n ? 6 : 14, H = n ? 620 : 860;
+  const RIGHT = n ? PAD : GUTTER;   // symmetric, so the country lands centred
   const [x0, y0, x1, y1] = geo.bbox;
   const q = geo.quant;
   // equirectangular with a cosine correction at the country's mid-latitude
   const k = Math.cos(((y0 + y1) / 2) * Math.PI / 180);
   const mapH = H - PAD * 2 - (n ? 96 : 0);
   const mapW = mapH * ((x1 - x0) * k) / (y1 - y0);
-  const W = GUTTER + mapW + PAD;
+  const W = GUTTER + mapW + RIGHT;
   const s = svg(host, Math.round(W), H);
   const left = GUTTER + (n ? (W - GUTTER - PAD - mapW) / 2 : 0);
   const px = gx => left + (gx / q) * mapW;
@@ -1193,6 +1194,9 @@ export function localMap(host, geo, meta) {
   const closeCity = () => {
     openCity = null;
     zoomTo(false);
+    pin.setAttribute('opacity', 0);
+    // rings take the pointer again only once we are back at national scale
+    cities.style.pointerEvents = 'auto';
     marks.forEach(m => m.g.setAttribute('opacity', 1));
     back.setAttribute('opacity', 0);
     label.textContent = '';
@@ -1201,6 +1205,11 @@ export function localMap(host, geo, meta) {
   const openTo = m => {
     if (openCity === m.index) { closeCity(); return; }
     openCity = m.index;
+    pin.setAttribute('opacity', 0);
+    // Inside an open city the whole point is to read individual wards, and the
+    // ring's own hit target covers exactly the ground the reader wants to
+    // hover. Hand the pointer back to the map; the gutter control closes it.
+    cities.style.pointerEvents = 'none';
     frameOn(m.cx, m.cy, m.r * 1.35);
     // the other eleven rings would be drawn at the zoomed scale and swamp the
     // city the reader just opened
@@ -1218,8 +1227,12 @@ export function localMap(host, geo, meta) {
     el('title', {}, g).textContent = `Zoom into ${meta.cities[index].name}`;
     // a generous transparent target so a 5-unit city is still clickable
     el('circle', { cx, cy, r: Math.max(r, 9), fill: 'transparent' }, g);
+    el('circle', {
+      cx, cy, r, fill: 'none', stroke: C.ink, 'stroke-width': 4.2, opacity: 0.55,
+      'vector-effect': 'non-scaling-stroke', 'pointer-events': 'none'
+    }, g);
     const circle = el('circle', {
-      cx, cy, r, fill: 'none', stroke: C.ink, 'stroke-width': 1.3,
+      cx, cy, r, fill: 'none', stroke: C.white, 'stroke-width': 2,
       'vector-effect': 'non-scaling-stroke', 'pointer-events': 'none'
     }, g);
     const m = { index, cx, cy, r, circle, g };
@@ -1304,6 +1317,35 @@ export function localMap(host, geo, meta) {
   };
 
   const showBorders = width => borders.setAttribute('stroke-width', width);
+
+  /* One unit, found by name. The mosaic holds 5,321 verdicts and a reader's own
+     union is one of them; without a way in it is unreachable. */
+  const pin = el('g', { opacity: 0, 'pointer-events': 'none' }, zoomable);
+  const pinOuter = el('circle', {
+    fill: 'none', stroke: C.ink, 'stroke-width': 5, opacity: 0.55,
+    'vector-effect': 'non-scaling-stroke'
+  }, pin);
+  const pinInner = el('circle', {
+    fill: 'none', stroke: C.white, 'stroke-width': 2.4, 'vector-effect': 'non-scaling-stroke'
+  }, pin);
+  const focusUnit = i => {
+    const box = nodes[i].getBBox();
+    const cx = box.x + box.width / 2, cy = box.y + box.height / 2;
+    const r = Math.max(Math.max(box.width, box.height) / 2 + 2, 4);
+    for (const c of [pinOuter, pinInner]) {
+      c.setAttribute('cx', cx); c.setAttribute('cy', cy); c.setAttribute('r', r);
+    }
+    pin.setAttribute('opacity', 1);
+    openCity = null;
+    marks.forEach(m => m.g.setAttribute('opacity', 0));
+    cities.style.pointerEvents = 'none';
+    frameOn(cx, cy, Math.max(r * 3.2, 26));
+    back.setAttribute('opacity', 1);
+    label.textContent = U.n[i];
+    const w = U.w[i];
+    sub.textContent = `${U.d[i]} · ${TYPE[U.t[i]]} · ${meta.parties[w]}`
+      + (w < 7 ? ` by ${pct(U.mg[i])}` : '');
+  };
   const setRing = on => ring.setAttribute('opacity', on ? 1 : 0);
   const setCities = on => {
     cities.setAttribute('opacity', on ? 1 : 0);
@@ -1351,6 +1393,7 @@ export function localMap(host, geo, meta) {
       showBorders(1.1); setRing(true); zoomTo(true); wild.setAttribute('opacity', 0); setCities(false);
       setTally(meta.counts.wards, 'city wards', 'across the twelve cities');
     },
+    focusUnit,
     union: () => {
       tier = null;
       paint(own, () => true);

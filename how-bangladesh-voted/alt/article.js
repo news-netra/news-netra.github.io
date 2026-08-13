@@ -19,6 +19,57 @@ const load = name =>
 
 const fmt = n => n.toLocaleString('en-US');
 
+/* -------------------------------------------------------- map lookup */
+/* 5,321 units, searched by name and district. Names are not unique — there are
+   many Ramnagars — so every result carries its district and tier, and the list
+   is capped: a reader scanning forty identical names is not being helped. */
+function buildMapSearch(host, meta, focus) {
+  if (!host) return;
+  const input = host.querySelector('input');
+  const list = host.querySelector('ul');
+  const U = meta.units;
+  const KIND = ['union', 'municipality', 'city ward'];
+  const index = U.n.map((name, i) => ({
+    i, name, hay: `${name} ${U.d[i]}`.toLowerCase()
+  }));
+
+  const clear = () => { list.innerHTML = ''; };
+  input.addEventListener('input', () => {
+    const q = input.value.trim().toLowerCase();
+    clear();
+    if (q.length < 2) return;
+    const hits = [];
+    for (const row of index) {
+      if (row.hay.includes(q)) hits.push(row);
+      if (hits.length >= 40) break;
+    }
+    // a name that starts with the query is a better answer than one containing it
+    hits.sort((a, b) =>
+      (b.name.toLowerCase().startsWith(q) ? 1 : 0) - (a.name.toLowerCase().startsWith(q) ? 1 : 0));
+    for (const row of hits.slice(0, 8)) {
+      const li = document.createElement('li');
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.innerHTML = `${row.name}<small>${U.d[row.i]} · ${KIND[U.t[row.i]]}</small>`;
+      button.addEventListener('click', () => {
+        focus(row.i);
+        input.value = row.name;
+        clear();
+      });
+      li.append(button);
+      list.append(li);
+    }
+  });
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { input.value = ''; clear(); }
+    if (e.key === 'Enter') {
+      const first = list.querySelector('button');
+      if (first) { e.preventDefault(); first.click(); }
+    }
+  });
+  document.addEventListener('click', e => { if (!host.contains(e.target)) clear(); });
+}
+
 /* ---------------------------------------------------------- responsive */
 /* Redraw a chart only when it crosses the narrow/wide boundary. Charts are
    sized in viewBox units, so ordinary resizing costs nothing; it is only the
@@ -190,9 +241,19 @@ async function main() {
     responsive($('#tiers-chart'), () => localTiers($('#tiers-chart'), tiers));
 
     const C = mapMeta.counts;
+    const mapViews = localMap($('#verdict-map'), mapGeo, mapMeta);
+    // the search belongs to the final step only, where the map stops being a
+    // narrative and becomes something to look yourself up in
+    const searchBox = $('#map-search');
+    const stepViews = Object.fromEntries(
+      Object.entries(mapViews)
+        .filter(([key]) => key !== 'focusUnit')
+        .map(([key, run]) => [key, () => { run(); searchBox.hidden = key !== 'union'; }])
+    );
+    buildMapSearch(searchBox, mapMeta, mapViews.focusUnit);
     initScrolly(
       document.querySelector('#scrolly-map'),
-      localMap(document.querySelector('#verdict-map'), mapGeo, mapMeta),
+      stepViews,
       {
         upazila: ['The same election, by upazila', `${fmt(C.upazilas)} sub-districts. City corporations are held back — they sit outside the upazila system`],
         city: ['The twelve city corporations', 'Each city as a single unit. The ring marks four of them'],

@@ -539,6 +539,12 @@
         <div class="fig-title" id="map-title">The same election, by upazila</div>
         <div class="fig-sub" id="map-sub">495 sub-districts. City corporations are held back — they sit outside the upazila system</div>
       </div>
+      <div class="mapsearch" id="map-search" hidden>
+        <label class="sr-only" for="map-search-input">Find a union, town or ward</label>
+        <input id="map-search-input" type="search" autocomplete="off" spellcheck="false"
+               placeholder="Find your union, town or ward…">
+        <ul id="map-search-results" role="listbox" aria-label="Matching places"></ul>
+      </div>
       <div class="fig-scroll scrolly-plot" id="verdict-map"></div>
     </div>
   </div>
@@ -591,7 +597,7 @@
         constantly. Khulna-5, the seat this piece opened with, is one seat
         assembled out of eighteen of these arguments.
         <span class="step-hint">Each ring is a city corporation — click one to
-        open it and read its wards.</span>
+        open it. Or search for your own union, town or ward.</span>
       </div>
     </div>
   </div>

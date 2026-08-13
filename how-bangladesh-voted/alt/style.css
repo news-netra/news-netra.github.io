@@ -589,3 +589,36 @@ footer {
   font-size: .82rem;
   color: var(--muted);
 }
+
+/* Look up one unit in the mosaic. Shown only on the final step, where the map
+   stops being a narrative and becomes something to search. */
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+}
+.mapsearch { position: relative; flex: none; width: min(22rem, 90%); margin: 0 auto .6rem; }
+.mapsearch input {
+  width: 100%;
+  font-family: var(--sans);
+  font-size: .9rem;
+  color: var(--ink);
+  background: #efebe7;
+  border: 0;
+  padding: .5rem .8rem;
+}
+.mapsearch input::placeholder { color: var(--muted); }
+.mapsearch input:focus-visible { outline: 2px solid var(--ink); outline-offset: 1px; }
+.mapsearch ul {
+  position: absolute; z-index: 5; left: 0; right: 0; top: 100%;
+  margin: 2px 0 0; padding: 0; list-style: none;
+  background: var(--bg); max-height: 15rem; overflow-y: auto;
+}
+.mapsearch ul:not(:empty) { box-shadow: none; }
+.mapsearch li button {
+  display: block; width: 100%; text-align: left;
+  font-family: var(--sans); font-size: .84rem; line-height: 1.3;
+  background: #f6f3ef; border: 0; padding: .42rem .7rem; cursor: pointer;
+  color: var(--ink);
+}
+.mapsearch li button:hover, .mapsearch li button:focus-visible { background: #e3ddd6; }
+.mapsearch li button small { display: block; color: var(--muted); font-size: .76rem; }
