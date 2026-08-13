@@ -1159,14 +1159,85 @@ export function localMap(host, geo, meta) {
   }, ring);
 
   // the zoom itself: fit that ring into the map area
-  // `k` upstream is the projection's cosine correction; this is the zoom factor
-  const zoomK = Math.min(mapW, mapH) / (ringR * 1.9);
-  const zoomTo = on => {
-    if (!on) { zoomable.setAttribute('transform', 'translate(0,0) scale(1)'); return; }
+  // `k` upstream is the projection's cosine correction; this frames any circle
+  const frameOn = (fx, fy, fr) => {
+    const kz = Math.min(mapW, mapH) / (fr * 2);
     const cx = left + mapW / 2, cy = PAD + (n ? 70 : 0) + mapH / 2;
     zoomable.setAttribute('transform',
-      `translate(${cx - zoomK * ringX},${cy - zoomK * ringY}) scale(${zoomK})`);
+      `translate(${cx - kz * fx},${cy - kz * fy}) scale(${kz})`);
   };
+  const zoomTo = on => {
+    if (!on) { zoomable.setAttribute('transform', 'translate(0,0) scale(1)'); return; }
+    frameOn(ringX, ringY, ringR * 0.95);
+  };
+
+  /* ---- every city, as something you can open ----------------------------- */
+  /* At the final step the country is 5,321 units and the twelve city
+     corporations are the densest and least legible part of it. A ring over each
+     one turns them into things the reader can open: click, and the map frames
+     that city so its wards become readable. */
+  const cityBox = new Map();
+  nodes.forEach((node, i) => {
+    const c = U.cc[i];
+    if (c < 0) return;
+    const b = node.getBBox();
+    const box = cityBox.get(c) || { x0: Infinity, y0: Infinity, x1: -Infinity, y1: -Infinity };
+    box.x0 = Math.min(box.x0, b.x); box.y0 = Math.min(box.y0, b.y);
+    box.x1 = Math.max(box.x1, b.x + b.width); box.y1 = Math.max(box.y1, b.y + b.height);
+    cityBox.set(c, box);
+  });
+
+  const cities = el('g', { opacity: 0, style: 'transition: opacity 420ms ease' }, zoomable);
+  let openCity = null;
+  const marks = [];
+  const closeCity = () => {
+    openCity = null;
+    zoomTo(false);
+    marks.forEach(m => m.g.setAttribute('opacity', 1));
+    back.setAttribute('opacity', 0);
+    label.textContent = '';
+    sub.textContent = '';
+  };
+  const openTo = m => {
+    if (openCity === m.index) { closeCity(); return; }
+    openCity = m.index;
+    frameOn(m.cx, m.cy, m.r * 1.35);
+    // the other eleven rings would be drawn at the zoomed scale and swamp the
+    // city the reader just opened
+    marks.forEach(o => o.g.setAttribute('opacity', o === m ? 1 : 0));
+    back.setAttribute('opacity', 1);
+    const row = meta.cities[m.index];
+    label.textContent = row.name.replace(' City Corporation', '');
+    sub.textContent = `${fmt(row.units)} wards · ${meta.parties[row.w]} led`;
+  };
+
+  for (const [index, box] of cityBox) {
+    const cx = (box.x0 + box.x1) / 2, cy = (box.y0 + box.y1) / 2;
+    const r = Math.max(Math.max(box.x1 - box.x0, box.y1 - box.y0) / 2 + 3, 5);
+    const g = el('g', { class: 'cityhit', role: 'button', tabindex: 0 }, cities);
+    el('title', {}, g).textContent = `Zoom into ${meta.cities[index].name}`;
+    // a generous transparent target so a 5-unit city is still clickable
+    el('circle', { cx, cy, r: Math.max(r, 9), fill: 'transparent' }, g);
+    const circle = el('circle', {
+      cx, cy, r, fill: 'none', stroke: C.ink, 'stroke-width': 1.3,
+      'vector-effect': 'non-scaling-stroke', 'pointer-events': 'none'
+    }, g);
+    const m = { index, cx, cy, r, circle, g };
+    marks.push(m);
+    g.addEventListener('click', () => openTo(m));
+    g.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openTo(m); }
+    });
+  }
+
+  const gy = n ? H - 96 : 320;
+  const label = el('text', { x: 0, y: gy, class: 'series-label', fill: C.ink }, s);
+  const sub = el('text', { x: 0, y: gy + 17, class: 'tick-label', fill: C.muted }, s);
+  const back = el('g', { opacity: 0, style: 'transition: opacity 260ms ease', class: 'cityhit' }, s);
+  el('rect', { x: 0, y: gy + 26, width: 132, height: 20, fill: '#efebe7' }, back);
+  el('text', { x: 8, y: gy + 40, class: 'tick-label', fill: C.ink }, back)
+    .textContent = '← the whole country';
+  back.addEventListener('click', closeCity);
 
   /* ---- the Sundarbans, named rather than left as a hole ------------------ */
   const wildX = px(((89.42 - x0) / (x1 - x0)) * q);
@@ -1234,19 +1305,24 @@ export function localMap(host, geo, meta) {
 
   const showBorders = width => borders.setAttribute('stroke-width', width);
   const setRing = on => ring.setAttribute('opacity', on ? 1 : 0);
+  const setCities = on => {
+    cities.setAttribute('opacity', on ? 1 : 0);
+    cities.style.pointerEvents = on ? 'auto' : 'none';
+    if (!on && openCity !== null) closeCity();
+  };
 
   return {
     upazila: () => {
       tier = 'upazila';
       paint(i => (blank(i) ? own(i) : U.uz[i] >= 0 ? FILL[meta.upazilas[U.uz[i]].w] : HOLD), () => false);
-      showBorders(1.1); setRing(false); zoomTo(false); wild.setAttribute('opacity', 1);
+      showBorders(1.1); setRing(false); zoomTo(false); wild.setAttribute('opacity', 1); setCities(false);
       setTally(meta.counts.upazilas, 'upazilas', 'cities held back');
     },
     city: () => {
       tier = 'city';
       paint(i => (blank(i) ? own(i) : U.cc[i] >= 0 ? FILL[meta.cities[U.cc[i]].w]
         : U.uz[i] >= 0 ? FILL[meta.upazilas[U.uz[i]].w] : own(i)), () => false);
-      showBorders(1.1); setRing(true); zoomTo(false); wild.setAttribute('opacity', 1);
+      showBorders(1.1); setRing(true); zoomTo(false); wild.setAttribute('opacity', 1); setCities(false);
       setTally(meta.counts.cities, 'city corporations', 'now shown separately');
     },
     urban: () => {
@@ -1256,7 +1332,7 @@ export function localMap(host, geo, meta) {
       // stay inside the ring: the municipal towns pulled out here are as small
       // on the national map as the cities were, and pulling back now would hide
       // them the same way
-      showBorders(1.1); setRing(true); zoomTo(true); wild.setAttribute('opacity', 0);
+      showBorders(1.1); setRing(true); zoomTo(true); wild.setAttribute('opacity', 0); setCities(false);
       setTally(meta.counts.wards + meta.counts.municipalities, 'city wards and', 'municipalities in all');
     },
     // inside the ring: cities as whole units, close enough to be a place
@@ -1264,7 +1340,7 @@ export function localMap(host, geo, meta) {
       tier = 'city';
       paint(i => (blank(i) ? own(i) : U.cc[i] >= 0 ? FILL[meta.cities[U.cc[i]].w]
         : U.uz[i] >= 0 ? FILL[meta.upazilas[U.uz[i]].w] : own(i)), () => false);
-      showBorders(1.1); setRing(true); zoomTo(true); wild.setAttribute('opacity', 0);
+      showBorders(1.1); setRing(true); zoomTo(true); wild.setAttribute('opacity', 0); setCities(false);
       setTally(4, 'cities around', 'the capital');
     },
     // the same frame, broken into wards: the change is now unmissable
@@ -1272,7 +1348,7 @@ export function localMap(host, geo, meta) {
       tier = null;
       paint(i => (!blank(i) && U.t[i] === 0 && U.uz[i] >= 0
         ? FILL[meta.upazilas[U.uz[i]].w] : own(i)), i => U.t[i] !== 0);
-      showBorders(1.1); setRing(true); zoomTo(true); wild.setAttribute('opacity', 0);
+      showBorders(1.1); setRing(true); zoomTo(true); wild.setAttribute('opacity', 0); setCities(false);
       setTally(meta.counts.wards, 'city wards', 'across the twelve cities');
     },
     union: () => {
@@ -1280,8 +1356,10 @@ export function localMap(host, geo, meta) {
       paint(own, () => true);
       // the units carry their own hairlines now, so the upazila skeleton only
       // needs to stay legible over the top of them
-      showBorders(0.8); setRing(false); zoomTo(false); wild.setAttribute('opacity', 1);
-      setTally(meta.counts.verdicts, 'local verdicts', 'in one election');
+      showBorders(0.8); setRing(false); wild.setAttribute('opacity', 1);
+      if (openCity === null) zoomTo(false);
+      setCities(true);
+      setTally(meta.counts.verdicts, 'local verdicts', 'click a city to open it');
     }
   };
 }

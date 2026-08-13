@@ -575,3 +575,17 @@ footer {
    verdicts and scrolls past in one screen otherwise */
 .step--dwell { min-height: 180vh; align-items: flex-start; padding-top: 22vh; }
 @media (max-width: 900px) { .step--dwell { min-height: 150svh; } }
+
+/* the city rings on the final map: something to open, not decoration */
+.cityhit { cursor: pointer; }
+.cityhit circle[stroke] { transition: stroke-width 140ms ease; }
+.cityhit:hover circle[stroke], .cityhit:focus-visible circle[stroke] { stroke-width: 2.6; }
+.cityhit:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+.step-hint {
+  display: block;
+  margin-top: .6rem;
+  font-family: var(--sans);
+  font-size: .82rem;
+  color: var(--muted);
+}
