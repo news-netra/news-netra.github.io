@@ -305,11 +305,11 @@ svg { display: block; width: 100%; height: auto; overflow: visible; }
   pointer-events: auto;
   max-width: 27rem;
   margin-inline: auto;
-  /* No edge, so the card has to hold itself off the graphic on background
-     alone. 0.94 rather than 0.86 also keeps the party colours below legible
-     where a card passes over a filled shape rather than white. */
+  /* 0.94 rather than 0.86 keeps the party colours below legible where a card
+     passes over a filled shape rather than white — measured, not guessed. */
   background: rgba(255, 255, 255, 0.94);
   backdrop-filter: blur(2px);
+  border: 0.5px dashed lightgray;
   padding: 1.15rem 1.4rem;
   font-size: 1rem;
   line-height: 1.55;
