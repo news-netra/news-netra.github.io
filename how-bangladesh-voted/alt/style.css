@@ -122,6 +122,18 @@ h1 {
   text-wrap: pretty;
   margin-bottom: 2rem;
 }
+/* A one-line note on who wrote it, in the label face and italic so it reads as
+   an aside to the byline rather than as the standfirst continuing. */
+.author-bio {
+  font-family: var(--sans);
+  font-style: italic;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--muted);
+  margin-top: 0.55rem;
+  max-width: 30rem;
+}
+
 .byline {
   font-family: var(--sans);
   font-size: 0.82rem;
@@ -351,10 +363,10 @@ svg { display: block; width: 100%; height: auto; overflow: visible; }
   background: var(--ink);
   color: #fff;
   font-family: var(--sans);
-  font-size: 0.76rem;
-  line-height: 1.5;
-  padding: 0.55rem 0.7rem;
-  max-width: 17rem;
+  font-size: 0.7rem;
+  line-height: 1.35;
+  padding: 0.38rem 0.5rem;
+  max-width: 13rem;
   font-variant-numeric: tabular-nums;
 }
 .tip b { color: #fff; }
@@ -625,13 +637,21 @@ footer {
 .mapsearch input {
   width: 100%;
   font-family: var(--sans);
-  font-size: .9rem;
+  font-size: .92rem;
   color: var(--ink);
-  background: #efebe7;
-  border: 0;
-  padding: .5rem .8rem;
+  /* A flat wash with no edge read as a caption. An outline, a white field and a
+     magnifier make it look like the thing it is — the only way into 5,321
+     units by name. */
+  background: var(--bg) url("data:image/svg+xml;charset=utf-8,\
+%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' \
+stroke='%2377706a' stroke-width='2.2' stroke-linecap='round'%3E\
+%3Ccircle cx='10.5' cy='10.5' r='6.5'/%3E%3Cpath d='M15.4 15.4 21 21'/%3E\
+%3C/svg%3E") no-repeat .62rem 50% / .95rem .95rem;
+  border: 1.5px solid var(--ink);
+  padding: .58rem .8rem .58rem 2.05rem;
 }
-.mapsearch input::placeholder { color: var(--muted); }
+.mapsearch input::placeholder { color: var(--muted); opacity: 1; }
+.mapsearch input:focus-visible { outline: 2px solid var(--ink); outline-offset: 1px; }
 .mapsearch input:focus-visible { outline: 2px solid var(--ink); outline-offset: 1px; }
 .mapsearch ul {
   position: absolute; z-index: 5; left: 0; right: 0; top: 100%;

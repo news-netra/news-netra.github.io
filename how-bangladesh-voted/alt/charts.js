@@ -1094,11 +1094,18 @@ export function localMap(host, geo, meta) {
   // equirectangular with a cosine correction at the country's mid-latitude
   const k = Math.cos(((y0 + y1) / 2) * Math.PI / 180);
   const mapH = H - PAD * 2 - (n ? 96 : 0);
-  const mapW = mapH * ((x1 - x0) * k) / (y1 - y0);
+  // the country's own width at this height — what the projection draws into
+  const natW = mapH * ((x1 - x0) * k) / (y1 - y0);
+  /* Bangladesh is taller than it is wide, so a frame cut to the country leaves
+     a tall slot: zoom into a city and you see a narrow column of it with the
+     rest of the district off both edges. The map AREA is therefore wider than
+     the country, which costs a little height at national scale and buys back
+     far more context at every zoom. The country stays centred in it. */
+  const mapW = n ? natW : natW * 1.18;
   const W = GUTTER + mapW + RIGHT;
   const s = svg(host, Math.round(W), H);
-  const left = GUTTER + (n ? (W - GUTTER - PAD - mapW) / 2 : 0);
-  const px = gx => left + (gx / q) * mapW;
+  const left = GUTTER + (n ? (W - GUTTER - PAD - mapW) / 2 : (mapW - natW) / 2);
+  const px = gx => left + (gx / q) * natW;
   const py = gy => PAD + (n ? 70 : 0) + mapH - (gy / q) * mapH;
 
   const arcs = decodeArcs(geo.arcs);
@@ -1156,7 +1163,7 @@ export function localMap(host, geo, meta) {
   // otherwise flood the gutter the key and the tally live in
   const clipId = `vmap-${Math.round(performance.now())}`;
   el('rect', {
-    x: left - 2, y: PAD + (n ? 60 : 0) - 2, width: mapW + 4, height: mapH + 4
+    x: GUTTER - 2, y: PAD + (n ? 60 : 0) - 2, width: mapW + 4, height: mapH + 4
   }, el('clipPath', { id: clipId }, el('defs', {}, s)));
   const clipped = el('g', { 'clip-path': `url(#${clipId})` }, s);
   const zoomable = el('g', {
@@ -1240,7 +1247,7 @@ export function localMap(host, geo, meta) {
   // the zoom itself: fit that ring into the map area
   // `k` upstream is the projection's cosine correction; this frames any circle
   const frameOn = (fx, fy, fr) => {
-    const kz = Math.min(mapW, mapH) / (fr * 2);
+    const kz = Math.min(natW, mapH) / (fr * 2);
     const cx = left + mapW / 2, cy = PAD + (n ? 70 : 0) + mapH / 2;
     zoomable.setAttribute('transform',
       `translate(${cx - kz * fx},${cy - kz * fy}) scale(${kz})`);
@@ -1339,9 +1346,14 @@ export function localMap(host, geo, meta) {
   const sub = el('text',
     { x: gx, y: gy + 17, 'text-anchor': anchor, class: 'tick-label', fill: C.muted }, s);
   const back = el('g', { opacity: 0, style: 'transition: opacity 260ms ease', class: 'cityhit' }, s);
-  el('rect', { x: n ? gx - 132 : 0, y: gy + 26, width: 132, height: 20, fill: '#efebe7' }, back);
-  el('text', { x: (n ? gx - 132 : 0) + 8, y: gy + 40, class: 'tick-label', fill: C.ink }, back)
-    .textContent = '← the whole country';
+  // Solid ink rather than a pale wash: this is the only way back out of a
+  // zoomed city, and at 11px on #efebe7 it read as a caption, not a control.
+  const backX = n ? gx - 150 : 0;
+  el('rect', { x: backX, y: gy + 26, width: 150, height: 28, fill: C.ink }, back);
+  el('text', {
+    x: backX + 12, y: gy + 45, class: 'tick-label', fill: C.white,
+    style: 'font-weight:600'
+  }, back).textContent = '← Back to the whole country';
   back.addEventListener('click', closeCity);
 
   /* ---- the Sundarbans, named rather than left as a hole ------------------ */
