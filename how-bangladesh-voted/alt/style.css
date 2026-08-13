@@ -125,7 +125,9 @@ h1 {
 /* A one-line note on who wrote it, in the label face and italic so it reads as
    an aside to the byline rather than as the standfirst continuing. */
 .author-bio {
-  font-family: var(--sans);
+  /* mono, like the smallest annotations on the charts — an aside in a different
+     voice from both the standfirst above it and the prose below */
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
   font-style: italic;
   font-size: 0.78rem;
   line-height: 1.5;
