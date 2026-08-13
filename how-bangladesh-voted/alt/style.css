@@ -543,8 +543,10 @@ footer {
 @media (max-width: 900px) {
   .fig-head,
   figure.wide > .legend,
+  figure.wide > .switch,
   .scrolly-graphic .legend,
   .scrolly-graphic .fig-head,
+  .mapsearch,
   figcaption { padding-inline: var(--fig-inset); }
   .legend--narrowonly { padding-inline: var(--fig-inset); }
 }
