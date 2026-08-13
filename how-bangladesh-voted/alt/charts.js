@@ -919,84 +919,35 @@ export function turnoutGapPairs(host, pairs, viewKey = 'all') {
 /* ===========================================================================
    6. THE LOCAL TIERS — stacked shares of leadership, tier by tier.
    =========================================================================== */
-export function localTiers(host, tiers, national) {
+export function localTiers(host, tiers, seats) {
   const n = isNarrow(host);
   // the tier name moves above its own bar rather than beside it, and the
   // right-hand annotation column goes
-  const W = n ? 380 : 900, H = n ? 430 : 372;
+  const W = n ? 380 : 900, H = n ? 486 : 400;
   const mL = n ? 6 : 124, mR = n ? 6 : 128, mT = n ? 26 : 26, mB = n ? 22 : 31;
   const s = svg(host, W, H);
   el('desc', {}, s).textContent =
-    'Two measures on one 0 to 100 per cent scale. A reference bar shows each '
-    + "party's share of the 73.5 million votes cast: BNP 50 per cent, Jamaat 32, "
-    + 'independents 6, NCP 3, every other party 9. Below it, four bars show the '
-    + 'share of local units where each party finished first — unions, '
-    + 'municipalities, city wards and upazilas — where the BNP led between 67 '
-    + 'and 73 per cent and Jamaat between 21 and 23.';
-  // A reference band sits above the tiers: the national vote share, drawn to the
-  // same scale so the widths can be compared, but measuring something else
-  // entirely. Everything below the rule counts UNITS LED, one unit one count,
-  // whatever its size; the band counts VOTES.
-  const BAR_H = 34;
-  const bandY = mT + (n ? 18 : 0);
-  const ruleY = bandY + BAR_H + (n ? 14 : 16);
-  const tierTop = ruleY + (n ? 26 : 28);
-  const iw = W - mL - mR, ih = H - tierTop - mB;
-  const rowH = ih / tiers.length;
+    'Five bars on one scale, each the share of places where a party finished '
+    + 'first. Parliamentary seats: BNP 70 per cent, Jamaat 22, independents 3, '
+    + 'NCP 2. Below a rule, the same election counted over local government — '
+    + 'unions, municipalities, city wards and upazilas — where the BNP led '
+    + 'between 67 and 73 per cent and Jamaat between 21 and 23.';
+
+  // Seats are the same measure as the rows below — the share of places where a
+  // party finished first — one tier coarser, so the row is drawn exactly like a
+  // tier and no denominator changes down the column. Only the rule marks that
+  // constituencies are Parliament and everything under it is local government.
+  const rows = seats ? [seats, ...tiers] : tiers;
+  const GAP = seats ? (n ? 24 : 20) : 0;
+  const iw = W - mL - mR, ih = H - mT - mB - GAP;
+  const rowH = ih / rows.length;
   const colour = party => partyFill(party);
+  let bnpEdge = null, lastBottom = 0;
+  const bands = [];
 
-  /* ---- the reference band ------------------------------------------------ */
-  // Same order as the tier rows, forced rather than sorted, so every segment
-  // boundary can be read straight down the column.
-  let nationalBnpX = null;
-  let lastBarBottom = 0;
-  if (national) {
-    let acc = 0;
-    [...national.shares, { party: 'Other', ...national.rest }].forEach(l => {
-      const w = (l.pct / 100) * iw;
-      const seg = el('rect', {
-        x: mL + acc, y: bandY, width: Math.max(w - 0.8, 0.8), height: BAR_H,
-        fill: colour(l.party)
-      }, s);
-      hover(seg, `<b>National vote — ${
-        l.party === 'Other' ? 'every other party' : l.party}</b><br>${
-        fmt(l.votes)} votes<br>${pct(l.pct)} of all votes cast`);
-      if (w > (n ? 30 : 46)) {
-        el('text', {
-          x: mL + acc + w / 2, y: bandY + BAR_H / 2 + 4, 'text-anchor': 'middle',
-          class: 'value-label', fill: C.white
-        }, s).textContent = `${l.pct.toFixed(0)}%`;
-      }
-      acc += w;
-      if (l.party === 'BNP') nationalBnpX = mL + acc;
-    });
-
-    const votes = `${(national.validVotes / 1e6).toFixed(1)}m votes cast`;
-    if (n) {
-      el('text', { x: mL, y: bandY - 8, class: 'cat-label', 'font-weight': 600, fill: C.ink }, s)
-        .textContent = 'National vote share';
-      el('text', { x: mL + iw, y: bandY - 8, 'text-anchor': 'end', class: 'tick-label' }, s)
-        .textContent = votes;
-    } else {
-      el('text', {
-        x: mL - 12, y: bandY + BAR_H / 2 + 5, 'text-anchor': 'end',
-        class: 'cat-label', 'font-weight': 600, fill: C.ink
-      }, s).textContent = 'National vote share';
-      el('text', { x: mL - 12, y: bandY + BAR_H / 2 + 19, 'text-anchor': 'end', class: 'tick-label' }, s)
-        .textContent = votes;
-    }
-
-    el('line', {
-      x1: mL, x2: mL + iw, y1: ruleY, y2: ruleY, stroke: C.rule, 'stroke-width': 1
-    }, s);
-    // the one line a reader must cross to get from the band to the tiers, and
-    // it contains the negation
-    el('text', { x: mL, y: ruleY + (n ? 17 : 18), class: 'tick-label' }, s)
-      .textContent = 'Below: units led, not votes';
-  }
-
-  tiers.forEach((t, i) => {
-    const cy = tierTop + i * rowH + (n ? 22 : 8);
+  rows.forEach((t, i) => {
+    const parliament = seats && i === 0;
+    const cy = mT + i * rowH + (i ? GAP : 0) + (n ? 22 : 8);
     const bh = Math.min(34, rowH - (n ? 40 : 22));
     let acc = 0;
     const shown = t.leaders.filter(l => l.pct >= 0.4);
@@ -1008,7 +959,10 @@ export function localTiers(host, tiers, national) {
           x: mL + acc, y: cy, width: Math.max(w - 0.8, 0.8), height: bh,
           fill: l.party === 'Others' ? C.neutral : colour(l.party)
         }, s);
-        hover(seg, `<b>${t.tier} — ${l.party}</b><br>${l.units !== null ? `led ${fmt(l.units)} of ${fmt(t.total)}` : 'remaining units'}<br>${pct(l.pct)}`);
+        const what = parliament ? 'won' : 'led';
+        hover(seg, `<b>${t.tier} — ${l.party}</b><br>${l.units !== null
+          ? `${what} ${fmt(l.units)} of ${fmt(t.total)}`
+          : `remaining ${parliament ? 'seats' : 'units'}`}<br>${pct(l.pct)}`);
         if (w > (n ? 34 : 46)) {
           el('text', {
             x: mL + acc + w / 2, y: cy + bh / 2 + 4, 'text-anchor': 'middle',
@@ -1016,45 +970,60 @@ export function localTiers(host, tiers, national) {
           }, s).textContent = `${l.pct.toFixed(0)}%`;
         }
         acc += w;
+        if (parliament && l.party === 'BNP') bnpEdge = mL + acc;
       });
+    const count = parliament ? `${fmt(t.total)} declared` : `${fmt(t.total)} units`;
     if (n) {
       // name above the bar, and the close-unit count folded into the same line
       el('text', { x: mL, y: cy - 8, class: 'cat-label', 'font-weight': 600, fill: C.ink }, s)
         .textContent = t.tier;
       el('text', { x: mL + iw, y: cy - 8, 'text-anchor': 'end', class: 'tick-label' }, s)
-        .textContent = `${fmt(t.total)} units · ${fmt(t.close)} within 5 pts`;
+        .textContent = `${count} · ${fmt(t.close)} within 5 pts`;
     } else {
       el('text', { x: mL - 12, y: cy + bh / 2 + 5, 'text-anchor': 'end', class: 'cat-label', 'font-weight': 600 }, s)
         .textContent = t.tier;
       el('text', { x: mL - 12, y: cy + bh / 2 + 19, 'text-anchor': 'end', class: 'tick-label' }, s)
-        .textContent = `${fmt(t.total)} units`;
+        .textContent = count;
       // the number that matters for the local elections to come
       el('text', { x: mL + iw + 14, y: cy + bh / 2 - 2, class: 'value-label', fill: C.ink }, s)
         .textContent = `${fmt(t.close)}`;
       el('text', { x: mL + iw + 14, y: cy + bh / 2 + 13, class: 'tick-label' }, s)
         .textContent = `within 5 pts`;
     }
-    lastBarBottom = cy + bh;
+    lastBottom = cy + bh;
+    bands.push([cy, cy + bh]);
+    // Parliament above, local government below
+    if (parliament) {
+      const ry = cy + bh + (n ? 15 : 11);
+      el('line', { x1: mL, x2: mL + iw, y1: ry, y2: ry, stroke: C.rule, 'stroke-width': 1 }, s);
+    }
   });
 
   /* ---- the one line that carries the argument ---------------------------- */
-  // Dropped from the reference band's BNP edge straight through every tier, in
+  // Dropped from the seat row's BNP edge straight through every local tier, in
   // the same vocabulary the turnout chart already uses for a national rate. The
-  // gap between this line and the end of each teal block IS the amplification:
-  // half the votes, two-thirds of the map. Only BNP gets a line — Jamaat's
-  // block floats off a moving left edge, so a second line at 81.7% would land
-  // exactly on the Municipalities "21%" label and compare nothing.
-  if (nationalBnpX !== null) {
-    el('line', {
-      x1: nationalBnpX, x2: nationalBnpX, y1: bandY + BAR_H, y2: lastBarBottom + 6,
-      stroke: C.ink, 'stroke-width': 1.25, 'stroke-dasharray': '4 3', opacity: 0.5
-    }, s);
+  // point is how little the teal moves: a landslide that holds its shape all the
+  // way down to the smallest unit of government. Only BNP gets a line — Jamaat's
+  // block floats off a moving left edge, so a second line would compare nothing.
+  if (bnpEdge !== null) {
+    // On a phone the tier name and its counts sit ABOVE each bar, and at 70 per
+    // cent the line lands in the middle of that text — so there it crosses the
+    // bars only. On desktop the annotations are out in the margins and the line
+    // can run unbroken.
+    const spans = n ? bands : [[mT + 8, lastBottom]];
+    for (const [y1, y2] of spans) {
+      el('line', {
+        x1: bnpEdge, x2: bnpEdge, y1, y2: y2 + (n ? 0 : 6),
+        stroke: C.ink, 'stroke-width': 1.25, 'stroke-dasharray': '4 3', opacity: 0.5
+      }, s);
+    }
     el('text', {
-      x: nationalBnpX, y: lastBarBottom + 20, 'text-anchor': 'middle',
+      x: bnpEdge, y: lastBottom + 20, 'text-anchor': 'middle',
       class: 'tick-label', fill: C.ink
-    }, s).textContent = n ? 'BNP national vote share' : "BNP's share of the national vote";
+    }, s).textContent = n ? 'BNP seat share' : "BNP's share of parliamentary seats";
   }
 }
+
 
 /* ===========================================================================
    7. THE LOCAL VERDICT MAP — one geometry, five tiers.
