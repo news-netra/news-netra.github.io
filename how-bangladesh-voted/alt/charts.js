@@ -427,9 +427,9 @@ export function religionGradient(host, data) {
         stroke: C.white, 'stroke-width': 1.2
       }, s);
       hover(dot, `<b>${p.lo}–${p.hi}% Hindu</b>`
-        + `<em>BNP ${pct(p.bnp)} · Jamaat ${pct(p.jam)}</em>`
-        + `<i>everyone else ${pct(p.oth)}</i>`
-        + `<i>${fmt(p.centres)} centres · ${fmt(p.reg)} registered</i>`,
+        + `<span class="t-lead">BNP ${pct(p.bnp)} · Jamaat ${pct(p.jam)}</span>`
+        + `<span class="t-sub">everyone else ${pct(p.oth)}</span>`
+        + `<span class="t-sub">${fmt(p.centres)} centres · ${fmt(p.reg)} registered</span>`,
         p.bnp >= p.jam ? C.bnp : C.jam);
     }
     const last = pts[pts.length - 1];
@@ -554,8 +554,8 @@ export function turnoutByPlace(host, data) {
 
   panel(x0, 'Where the polling centre was', data.byPlace.map(r => ({
     label: r.label, v: r.turnout,
-    tip: `<b>${r.label}</b><em>${pct(r.turnout)} turnout</em>`
-      + `<i>${fmt(r.reg)} registered · ${fmt(r.centres)} centres</i>`
+    tip: `<b>${r.label}</b><span class="t-lead">${pct(r.turnout)} turnout</span>`
+      + `<span class="t-sub">${fmt(r.reg)} registered · ${fmt(r.centres)} centres</span>`
   })), 'v');
 
   // Seats grouped by how close the race was. Labelling these "closest fifth"
@@ -565,8 +565,8 @@ export function turnoutByPlace(host, data) {
     label: n ? `Won by ${Math.round(r.medianMargin)} pts` : `Won by about ${Math.round(r.medianMargin)} points`,
     sub: `${r.seats} seats`,
     v: r.turnout,
-    tip: `<b>${r.seats} seats</b><i>typical winning margin ${r.medianMargin} points</i>`
-      + `<em>turnout ${pct(r.turnout)}</em>`
+    tip: `<b>${r.seats} seats</b><span class="t-sub">typical winning margin ${r.medianMargin} points</span>`
+      + `<span class="t-lead">turnout ${pct(r.turnout)}</span>`
   }));
   panel(n ? 330 : panelW, 'How close the race was', margin, 'v');
 }
@@ -629,10 +629,10 @@ export function youthQuintiles(host, quintiles, byPlace) {
         cx: cx(p.quintile), cy: y(p.lead), r: st.r,
         fill: st.colour, stroke: C.white, 'stroke-width': 1.5
       }, s);
-      hover(dot, `<b>${series.label}</b><i>quintile ${p.quintile} of 5</i>`
-        + `<em>BNP lead ${pct(p.lead)}</em>`
-        + `<i>BNP ${pct(p.bnp)} · Jamaat ${pct(p.jam)}</i>`
-        + `<i>${fmt(p.centres)} centres · ${pct(p.youngShare)} too young for 2008</i>`,
+      hover(dot, `<b>${series.label}</b><span class="t-sub">quintile ${p.quintile} of 5</span>`
+        + `<span class="t-lead">BNP lead ${pct(p.lead)}</span>`
+        + `<span class="t-sub">BNP ${pct(p.bnp)} · Jamaat ${pct(p.jam)}</span>`
+        + `<span class="t-sub">${fmt(p.centres)} centres · ${pct(p.youngShare)} too young for 2008</span>`,
         st.colour);
     }
 
@@ -758,9 +758,9 @@ export function womenRanges(host, panels) {
           style: `transition: transform 620ms ${EASE}`, transform: `translate(${x(a) - x(b)},0)`
         }, mark);
         const dot = el('circle', { cx: x(b), cy: ry, r: 5.6, fill: colour }, travel);
-        hover(mark, `<b>${p.label}</b><i>${name}</i>`
-          + `<em>shift ${b - a > 0 ? '+' : ''}${(b - a).toFixed(1)} pts</em>`
-          + `<i>men-only ${pct(a)} · women-only ${pct(b)}</i>`, ink);
+        hover(mark, `<b>${p.label}</b><span class="t-sub">${name}</span>`
+          + `<span class="t-lead">shift ${b - a > 0 ? '+' : ''}${(b - a).toFixed(1)} pts</span>`
+          + `<span class="t-sub">men-only ${pct(a)} · women-only ${pct(b)}</span>`, ink);
 
         const left = Math.min(a, b), right = Math.max(a, b);
         const lo = el('text', { x: x(left) - 11, y: ry + 4, 'text-anchor': 'end', class: 'value-label', style: `fill:${ink}` }, mark);
@@ -886,7 +886,7 @@ export function turnoutGapPairs(host, pairs, viewKey = 'all') {
       ? `${Math.abs(b.x + step)}–${Math.abs(b.x)} points fewer women`
       : `${b.x}–${b.x + step} points more women`;
     hover(bar, `<b>${fmt(b.n)} pair${b.n === 1 ? '' : 's'}</b>`
-      + `<i>${pct(b.share)} of this group</i><em>${side}</em>`,
+      + `<span class="t-sub">${pct(b.share)} of this group</span><span class="t-lead">${side}</span>`,
       b.x < 0 ? LESS : MORE);
   }
 
@@ -985,11 +985,11 @@ export function localTiers(host, tiers, seats) {
           fill: l.party === 'Others' ? C.neutral : colour(l.party)
         }, s);
         const what = parliament ? 'won' : 'led';
-        hover(seg, `<b>${l.party}</b><i>${t.tier}</i>`
-          + `<em>${pct(l.pct)}</em>`
-          + `<i>${l.units !== null
+        hover(seg, `<b>${l.party}</b><span class="t-sub">${t.tier}</span>`
+          + `<span class="t-lead">${pct(l.pct)}</span>`
+          + `<span class="t-sub">${l.units !== null
             ? `${what} ${fmt(l.units)} of ${fmt(t.total)}`
-            : `remaining ${parliament ? 'seats' : 'units'}`}</i>`,
+            : `remaining ${parliament ? 'seats' : 'units'}`}</span>`,
           l.party === 'Others' ? C.neutral : colour(l.party));
         if (w > (n ? 34 : 46)) {
           el('text', {
@@ -1229,15 +1229,15 @@ export function localMap(host, geo, meta) {
     const t = TIERS[tier];
     const row = t && t.of[i] >= 0 ? t.rows[t.of[i]] : null;
     if (row) {
-      showTip(event, `<b>${row.name}</b><i>${row.sub} · ${fmt(row.units)} units</i>`
-        + `<em>${meta.parties[row.w]}${row.w < 8 ? ` by ${pct(row.mg)}` : ''}</em>`
-        + `<i>${fmt(row.reg)} voters${row.to ? ` · turnout ${pct(row.to)}` : ''}</i>`,
+      showTip(event, `<b>${row.name}</b><span class="t-sub">${row.sub} · ${fmt(row.units)} units</span>`
+        + `<span class="t-lead">${meta.parties[row.w]}${row.w < 8 ? ` by ${pct(row.mg)}` : ''}</span>`
+        + `<span class="t-sub">${fmt(row.reg)} voters${row.to ? ` · turnout ${pct(row.to)}` : ''}</span>`,
         FILL[row.w]);
     } else {
       const w = U.w[i];
-      showTip(event, `<b>${U.n[i]}</b><i>${U.d[i]} · ${TYPE[U.t[i]]}</i>`
-        + `<em>${meta.parties[w]}${w < 8 ? ` by ${pct(U.mg[i])}` : ''}</em>`
-        + `<i>${fmt(U.tv[i])} voters${U.to[i] ? ` · turnout ${pct(U.to[i])}` : ''}</i>`,
+      showTip(event, `<b>${U.n[i]}</b><span class="t-sub">${U.d[i]} · ${TYPE[U.t[i]]}</span>`
+        + `<span class="t-lead">${meta.parties[w]}${w < 8 ? ` by ${pct(U.mg[i])}` : ''}</span>`
+        + `<span class="t-sub">${fmt(U.tv[i])} voters${U.to[i] ? ` · turnout ${pct(U.to[i])}` : ''}</span>`,
         FILL[w]);
     }
   });
@@ -1609,9 +1609,9 @@ export function minorityRows(host, data) {
       .forEach(([key, colour, name]) => {
         const w = (r[key] / 100) * iw;
         const seg = el('rect', { x: mL + acc, y: top, width: Math.max(w, 0.6), height: bh, fill: colour }, s);
-        hover(seg, `<b>${r.label}</b><i>${name}</i>`
-          + `<em>${pct(r[key])} of the valid vote</em>`
-          + `<i>${fmt(r.centres)} centres · ${fmt(r.reg)} registered</i>`, colour);
+        hover(seg, `<b>${r.label}</b><span class="t-sub">${name}</span>`
+          + `<span class="t-lead">${pct(r[key])} of the valid vote</span>`
+          + `<span class="t-sub">${fmt(r.centres)} centres · ${fmt(r.reg)} registered</span>`, colour);
         if (w > 44) {
           el('text', {
             x: mL + acc + w / 2, y: cy + 4, 'text-anchor': 'middle',

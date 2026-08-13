@@ -387,15 +387,16 @@ svg { display: block; width: 100%; height: auto; overflow: visible; }
   color: #fff;
   margin-bottom: 0.12rem;
 }
-.tip i {
+/* Classes, not <i>/<em>: an element selector here loses to the host page's own
+   "i, em { font-style: italic }" and to the article's #hbv em, and the card
+   came out in italic body serif. */
+.tip .t-sub {
   display: block;
-  font-style: normal;
   font-size: 0.66rem;
   color: #a9a29b;
 }
-.tip em {
+.tip .t-lead {
   display: block;
-  font-style: normal;
   font-weight: 600;
   color: #fff;
   margin-top: 0.22rem;
