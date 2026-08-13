@@ -1182,9 +1182,16 @@ export function localMap(host, geo, meta) {
     const cx = left + mapW / 2, cy = PAD + (n ? 70 : 0) + mapH / 2;
     zoomable.setAttribute('transform',
       `translate(${cx - kz * fx},${cy - kz * fy}) scale(${kz})`);
+    // the Sundarbans callout is drawn outside the zooming group, so once the
+    // frame moves it points at whatever now happens to be under it
+    wild.setAttribute('opacity', 0);
   };
   const zoomTo = on => {
-    if (!on) { zoomable.setAttribute('transform', 'translate(0,0) scale(1)'); return; }
+    if (!on) {
+      zoomable.setAttribute('transform', 'translate(0,0) scale(1)');
+      wild.setAttribute('opacity', 1);
+      return;
+    }
     frameOn(ringX, ringY, ringR * 0.95);
   };
 
@@ -1259,12 +1266,19 @@ export function localMap(host, geo, meta) {
     });
   }
 
-  const gy = n ? H - 96 : 320;
-  const label = el('text', { x: 0, y: gy, class: 'series-label', fill: C.ink }, s);
-  const sub = el('text', { x: 0, y: gy + 17, class: 'tick-label', fill: C.muted }, s);
+  /* Where the reader is told what they are looking at. On a phone the bottom
+     band is already spoken for by the two-column key, so this block goes top
+     right instead, ranged right so a long name grows into the empty middle. */
+  const gy = n ? 16 : 372;
+  const gx = n ? Math.round(W) : 0;
+  const anchor = n ? 'end' : 'start';
+  const label = el('text',
+    { x: gx, y: gy, 'text-anchor': anchor, class: 'series-label', fill: C.ink }, s);
+  const sub = el('text',
+    { x: gx, y: gy + 17, 'text-anchor': anchor, class: 'tick-label', fill: C.muted }, s);
   const back = el('g', { opacity: 0, style: 'transition: opacity 260ms ease', class: 'cityhit' }, s);
-  el('rect', { x: 0, y: gy + 26, width: 132, height: 20, fill: '#efebe7' }, back);
-  el('text', { x: 8, y: gy + 40, class: 'tick-label', fill: C.ink }, back)
+  el('rect', { x: n ? gx - 132 : 0, y: gy + 26, width: 132, height: 20, fill: '#efebe7' }, back);
+  el('text', { x: (n ? gx - 132 : 0) + 8, y: gy + 40, class: 'tick-label', fill: C.ink }, back)
     .textContent = '← the whole country';
   back.addEventListener('click', closeCity);
 
@@ -1345,10 +1359,21 @@ export function localMap(host, geo, meta) {
   const pinInner = el('circle', {
     fill: 'none', stroke: C.white, 'stroke-width': 2.4, 'vector-effect': 'non-scaling-stroke'
   }, pin);
-  const focusUnit = i => {
-    const box = nodes[i].getBBox();
-    const cx = box.x + box.width / 2, cy = box.y + box.height / 2;
-    const r = Math.max(Math.max(box.width, box.height) / 2 + 2, 4);
+  /* Frame any set of units — one union, or every union in a district. The
+     caller supplies the set because the search knows what a district is and the
+     map does not; all the map has to know is how to put a box on screen. */
+  const focusSet = (ids, title, detail) => {
+    if (!ids || !ids.length) return;
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    for (const i of ids) {
+      const b = nodes[i].getBBox();
+      if (!b.width && !b.height) continue;
+      x0 = Math.min(x0, b.x); y0 = Math.min(y0, b.y);
+      x1 = Math.max(x1, b.x + b.width); y1 = Math.max(y1, b.y + b.height);
+    }
+    if (!isFinite(x0)) return;
+    const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
+    const r = Math.max(Math.max(x1 - x0, y1 - y0) / 2 + 2, 4);
     for (const c of [pinOuter, pinInner]) {
       c.setAttribute('cx', cx); c.setAttribute('cy', cy); c.setAttribute('r', r);
     }
@@ -1356,12 +1381,24 @@ export function localMap(host, geo, meta) {
     openCity = null;
     marks.forEach(m => m.g.setAttribute('opacity', 0));
     cities.style.pointerEvents = 'none';
-    frameOn(cx, cy, Math.max(r * 3.2, 26));
+    // a single union needs magnifying; a district is already most of the frame
+    frameOn(cx, cy, Math.max(r * (ids.length === 1 ? 3.2 : 1.5), 26));
     back.setAttribute('opacity', 1);
-    label.textContent = U.n[i];
+    label.textContent = title;
+    sub.textContent = detail;
+  };
+
+  /* Searching a city should land where clicking its ring lands — all the way
+     inside, with the wards hoverable — not merely near it. */
+  const openCityIndex = index => {
+    const m = marks.find(o => o.index === index);
+    if (m) openTo(m);
+  };
+
+  const focusUnit = i => {
     const w = U.w[i];
-    sub.textContent = `${U.d[i]} · ${TYPE[U.t[i]]} · ${meta.parties[w]}`
-      + (w < 8 ? ` by ${pct(U.mg[i])}` : '');
+    focusSet([i], U.n[i], `${U.d[i]} · ${TYPE[U.t[i]]} · ${meta.parties[w]}`
+      + (w < 8 ? ` by ${pct(U.mg[i])}` : ''));
   };
   const setRing = on => ring.setAttribute('opacity', on ? 1 : 0);
   const setCities = on => {
@@ -1411,6 +1448,8 @@ export function localMap(host, geo, meta) {
       setTally(meta.counts.wards, 'city wards', 'across the twelve cities');
     },
     focusUnit,
+    focusSet,
+    openCityIndex,
     union: () => {
       tier = null;
       paint(own, () => true);

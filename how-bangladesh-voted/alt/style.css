@@ -570,8 +570,11 @@ footer {
 
 /* a step the reader should be able to sit with: the final mosaic carries 5,321
    verdicts and scrolls past in one screen otherwise */
-.step--dwell { min-height: 180vh; align-items: flex-start; padding-top: 22vh; }
-@media (max-width: 900px) { .step--dwell { min-height: 150svh; } }
+/* The dwell step is also the last step, and `.step:last-child` outranks a bare
+   class — hence `.step.step--dwell`. The card sits near the top so it clears the
+   screen early, leaving the rest of the run as map with nothing over it. */
+.step.step--dwell { min-height: 300vh; align-items: flex-start; padding-top: 16vh; }
+@media (max-width: 900px) { .step.step--dwell { min-height: 240svh; padding-bottom: 0; } }
 
 /* the city rings on the final map: something to open, not decoration */
 .cityhit { cursor: pointer; }
@@ -579,13 +582,6 @@ footer {
 .cityhit:hover circle[stroke], .cityhit:focus-visible circle[stroke] { stroke-width: 2.6; }
 .cityhit:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
 
-.step-hint {
-  display: block;
-  margin-top: .6rem;
-  font-family: var(--sans);
-  font-size: .82rem;
-  color: var(--muted);
-}
 
 /* Look up one unit in the mosaic. Shown only on the final step, where the map
    stops being a narrative and becomes something to search. */

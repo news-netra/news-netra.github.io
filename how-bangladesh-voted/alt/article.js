@@ -23,51 +23,81 @@ const fmt = n => n.toLocaleString('en-US');
 /* 5,321 units, searched by name and district. Names are not unique — there are
    many Ramnagars — so every result carries its district and tier, and the list
    is capped: a reader scanning forty identical names is not being helped. */
-function buildMapSearch(host, meta, focus) {
+function buildMapSearch(host, meta, map) {
   if (!host) return;
   const input = host.querySelector('input');
   const list = host.querySelector('ul');
   const U = meta.units;
   const KIND = ['union', 'municipality', 'city ward'];
-  const index = U.n.map((name, i) => ({
-    i, name, hay: `${name} ${U.d[i]}`.toLowerCase()
-  }));
+
+  /* Four things are searchable, because a reader looking for "my area" may mean
+     any of them: the union they live in, the upazila or city it sits inside, or
+     the district. Each entry carries the unit indices it covers, so the map only
+     has to frame a set — it does not need to know what a district is. */
+  const entries = [];
+  const push = (name, sub, kind, ids, city) => entries.push({
+    name, sub, kind, ids, city, hay: `${name} ${sub}`.toLowerCase(),
+    key: name.toLowerCase()
+  });
+
+  const district = new Map(), upazila = new Map(), city = new Map();
+  U.n.forEach((name, i) => {
+    push(name, `${U.d[i]} · ${KIND[U.t[i]]}`, KIND[U.t[i]], [i]);
+    const bag = (m, k) => { if (!m.has(k)) m.set(k, []); m.get(k).push(i); };
+    bag(district, U.d[i]);
+    if (U.uz[i] >= 0) bag(upazila, U.uz[i]);
+    if (U.cc[i] >= 0) bag(city, U.cc[i]);
+  });
+  // a city ward's "district" is the corporation itself, which the city list
+  // already covers — otherwise Barishal turns up twice, once as its own parent
+  const isCity = new Set(meta.cities.map(c => c.name));
+  for (const [name, ids] of district) {
+    if (!isCity.has(name)) push(name, `district · ${fmt(ids.length)} units`, 'district', ids);
+  }
+  for (const [idx, ids] of upazila) {
+    const row = meta.upazilas[idx];
+    push(row.name, `${row.sub} · upazila`, 'upazila', ids);
+  }
+  for (const [idx, ids] of city) {
+    const row = meta.cities[idx];
+    push(row.name.replace(' City Corporation', ''),
+      `city corporation · ${fmt(ids.length)} wards`, 'city', ids, idx);
+  }
+  // an area is a likelier target than one of the many unions inside it
+  const RANK = { district: 0, city: 1, upazila: 2 };
+  const tier = e => (RANK[e.kind] === undefined ? 3 : RANK[e.kind]);
 
   const clear = () => { list.innerHTML = ''; };
   input.addEventListener('input', () => {
     const q = input.value.trim().toLowerCase();
     clear();
     if (q.length < 2) return;
-    const hits = [];
-    for (const row of index) {
-      if (row.hay.includes(q)) hits.push(row);
-      if (hits.length >= 40) break;
-    }
-    // a name that starts with the query is a better answer than one containing it
+    const hits = entries.filter(e => e.hay.includes(q));
     hits.sort((a, b) =>
-      (b.name.toLowerCase().startsWith(q) ? 1 : 0) - (a.name.toLowerCase().startsWith(q) ? 1 : 0));
-    for (const row of hits.slice(0, 8)) {
+      (b.key.startsWith(q) - a.key.startsWith(q)) || (tier(a) - tier(b)) || a.name.localeCompare(b.name));
+    for (const e of hits.slice(0, 9)) {
       const li = document.createElement('li');
       const button = document.createElement('button');
       button.type = 'button';
-      button.innerHTML = `${row.name}<small>${U.d[row.i]} · ${KIND[U.t[row.i]]}</small>`;
+      button.innerHTML = `${e.name}<small>${e.sub}</small>`;
       button.addEventListener('click', () => {
-        focus(row.i);
-        input.value = row.name;
+        if (e.kind === 'city') map.openCityIndex(e.city);
+        else map.focusSet(e.ids, e.name, e.sub);
+        input.value = e.name;
         clear();
       });
       li.append(button);
       list.append(li);
     }
   });
-  input.addEventListener('keydown', e => {
-    if (e.key === 'Escape') { input.value = ''; clear(); }
-    if (e.key === 'Enter') {
+  input.addEventListener('keydown', event => {
+    if (event.key === 'Escape') { input.value = ''; clear(); }
+    if (event.key === 'Enter') {
       const first = list.querySelector('button');
-      if (first) { e.preventDefault(); first.click(); }
+      if (first) { event.preventDefault(); first.click(); }
     }
   });
-  document.addEventListener('click', e => { if (!host.contains(e.target)) clear(); });
+  document.addEventListener('click', event => { if (!host.contains(event.target)) clear(); });
 }
 
 /* ---------------------------------------------------------- responsive */
@@ -247,10 +277,10 @@ async function main() {
     const searchBox = $('#map-search');
     const stepViews = Object.fromEntries(
       Object.entries(mapViews)
-        .filter(([key]) => key !== 'focusUnit')
+        .filter(([key]) => !key.startsWith('focus') && key !== 'openCityIndex')
         .map(([key, run]) => [key, () => { run(); searchBox.hidden = key !== 'union'; }])
     );
-    buildMapSearch(searchBox, mapMeta, mapViews.focusUnit);
+    buildMapSearch(searchBox, mapMeta, mapViews);
     initScrolly(
       document.querySelector('#scrolly-map'),
       stepViews,
