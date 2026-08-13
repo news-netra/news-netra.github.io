@@ -38,6 +38,7 @@
   --sans: "Archivo", "Helvetica Neue", Helvetica, Arial, sans-serif;
 
   --measure: 34rem;
+  --fig-inset: 1.5rem;
   --wide: 68rem;
 }
 
@@ -509,9 +510,8 @@ footer {
   figure.wide > .legend,
   .scrolly-graphic .legend,
   .scrolly-graphic .fig-head,
-  figcaption { padding-inline: 1.5rem; }
-  /* the map's own key is already inset by its narrow rule */
-  .legend--narrowonly { padding-inline: 1.5rem; }
+  figcaption { padding-inline: var(--fig-inset); }
+  .legend--narrowonly { padding-inline: var(--fig-inset); }
 }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
