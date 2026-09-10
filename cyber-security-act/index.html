@@ -5,15 +5,15 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="English and Bengali versions of the red-marked excerpts in the Cyber Protection Act cabinet draft, preserving additions and crossed text.">
 <title>Cyber Protection Act — red text changes</title>
-<style>:root{color-scheme:light;--paper:#f4f3ef;--ink:#20201f;--muted:#62625c;--line:#d8d8d0;--red:#e00000}
+<style>:root{color-scheme:light;--paper:#f4f3ef;--ink:#20201f;--muted:#62625c;--line:#d8d8d0;--red:#e00000;--language-bar-height:5rem}
 *{box-sizing:border-box}
 body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.55 system-ui,sans-serif}
-main{max-width:980px;margin:auto;padding:36px 24px 64px}
+main{max-width:980px;margin:auto;padding:calc(var(--language-bar-height) + 36px) 24px 64px}
 .page-header{display:flex;align-items:flex-start;justify-content:space-between;gap:24px;margin-bottom:12px}
 .eyebrow{margin:0 0 6px;font-size:14px;font-weight:650;color:var(--muted)}
 h1{font-size:clamp(28px,4vw,38px);line-height:1.18;letter-spacing:-.025em;margin:0}
-.language-panel{flex-shrink:0}
-.language-label{display:block;color:var(--muted);font-size:14px;margin-bottom:5px}
+.language-panel{position:fixed;inset:0 0 auto;z-index:4;height:var(--language-bar-height);display:flex;align-items:center;justify-content:flex-end;gap:12px;padding:10px max(24px,calc((100vw - 932px)/2));background:var(--paper);border-bottom:1px solid var(--line)}
+.language-label{display:block;color:var(--muted);font-size:14px}
 .language-switch{display:flex;padding:4px;border:1px solid #99998e;border-radius:8px;background:#fff;gap:4px}
 button{font:inherit;font-size:14px;border:1px solid #c9c9c0;border-radius:5px;background:#fff;padding:8px 12px;cursor:pointer;color:var(--ink);min-height:40px}
 button[aria-pressed=true]{background:#252523;color:#fff;border-color:#252523}
@@ -24,11 +24,11 @@ button:focus-visible,a:focus-visible{outline:3px solid #6484c3;outline-offset:3p
 .translation-note{font-size:14px;color:var(--muted);margin:0 0 20px}
 .legend{display:flex;gap:20px;flex-wrap:wrap;font-size:14px;margin-bottom:18px}
 .red-word{color:var(--red)}
-.toolbar{position:sticky;top:0;z-index:2;background:#f4f3eff5;padding:12px 0;display:flex;gap:8px;flex-wrap:wrap;border-bottom:1px solid var(--line)}
+.toolbar{position:sticky;top:var(--language-bar-height);z-index:2;background:#f4f3eff5;padding:12px 0;display:flex;gap:8px;flex-wrap:wrap;border-bottom:1px solid var(--line)}
 #copy-visible{margin-left:auto}
 .count{margin:14px 0;color:var(--muted);font-size:14px}
 #copy-feedback{display:block;min-height:1.5em;color:#315c37}
-.change-card{background:#fff;border:1px solid #deded7;border-radius:8px;padding:18px 22px 22px;margin:0 0 18px;break-inside:avoid}
+.change-card{background:#fff;border:1px solid #deded7;border-radius:8px;padding:18px 22px 22px;margin:0 0 18px;break-inside:avoid;scroll-margin-top:calc(var(--language-bar-height) + 9rem)}
 .card-header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px;font-size:14px;flex-wrap:wrap}
 .card-identity,.card-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .index{font-variant-numeric:tabular-nums;color:#777;text-decoration:none}
@@ -42,7 +42,7 @@ button:focus-visible,a:focus-visible{outline:3px solid #6484c3;outline-offset:3p
 del{text-decoration:line-through;text-decoration-thickness:1.5px}
 .source-note{color:var(--muted);font-size:14px;margin-top:28px;border-top:1px solid var(--line);padding-top:18px}
 [hidden]{display:none!important}
-@media(max-width:620px){main{padding:24px 14px 40px}.page-header{flex-direction:column;gap:18px}.language-panel{width:100%}.language-switch{width:100%}.language-switch button{flex:1}.change-card{padding:16px}.card-header{gap:10px}.card-actions{width:100%;justify-content:space-between}#copy-visible{margin-left:0}.toolbar{position:static}.extracted-text{font-size:17px}.extracted-text[lang=bn]{font-size:20px}}
+@media(max-width:620px){:root{--language-bar-height:4.5rem}main{padding:calc(var(--language-bar-height) + 24px) 14px 40px}.page-header{flex-direction:column;gap:18px}.language-panel{padding:10px 14px}.language-label{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}.language-switch{width:100%}.language-switch button{flex:1}.change-card{padding:16px;scroll-margin-top:calc(var(--language-bar-height) + 1rem)}.card-header{gap:10px}.card-actions{width:100%;justify-content:space-between}#copy-visible{margin-left:0}.toolbar{position:static}.extracted-text{font-size:17px}.extracted-text[lang=bn]{font-size:20px}}
 @media print{body{background:#fff}main{padding:0;max-width:none}.language-panel,.toolbar,.copy-one,#copy-feedback{display:none}.change-card{border-color:#ccc}.extracted-text{font-size:12pt}.extracted-text[lang=bn]{font-size:14pt}*{print-color-adjust:exact;-webkit-print-color-adjust:exact}}
 </style>
 </head>
