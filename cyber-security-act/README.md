@@ -2,6 +2,18 @@
 
 Published at https://news-netra.github.io/cyber-security-act/.
 
+## Comparison with existing text
+
+`comparison.html` compares `existing text.docx` against the complete Bengali draft. Spaces, tabs and line breaks are ignored; canonically equivalent Unicode forms are normalized to NFC. Punctuation, joiners, Gazette headers, page numbers and apparent transcription artifacts are retained as text differences.
+
+- Red additions and red strikethroughs retain the source draft's markings where supported by the DOCX comparison.
+- Blue marks additional draft text; purple strikethrough marks additional DOCX-only text.
+- A yellow background flags original red marks whose addition/removal status is not confirmed by the comparison.
+- Matching complete red edit groups are kept intact, avoiding false mismatches caused by shared letters inside replacement words. Exact, unique moved deletions are matched only within their corresponding section and identified in the reader.
+- Expand a passage to read the DOCX and draft excerpts separately. Filters distinguish additional differences and original red marks needing review.
+
+The comparison is a literal text comparison, including source transcription artifacts. Its counts describe displayed passages, not legal amendments. All three views (DOCX, physical draft redline, and draft with crossed text removed) are verified by reconstruction against their inputs. No source text is silently corrected.
+
 The complete 28-page Bengali transcript is available at https://news-netra.github.io/cyber-security-act/full-bn.html, with a plain Unicode download at `full-bn.txt`. It includes every source line, with page navigation, individual-page copying and whole-document copying. Red text, strikethrough and bold are retained in the HTML. The text download uses form-feed characters between source pages and has no formatting.
 
 The full transcript covers all 63,018 painted source glyphs exactly once, including 6,284 red glyphs. All 291 distinct Nikosh glyph outlines match the converter's reference font. No private-use or replacement characters remain. Source whitespace and wording are retained without manual correction.
